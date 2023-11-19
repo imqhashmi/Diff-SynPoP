@@ -46,9 +46,4 @@ The key novelty of this approach lies in its use of differentiable programming t
 
 7. **Incorporating External Datasets**: Integrating external datasets to enrich the model's understanding and capability in generating more realistic populations.
 
-## Conclusion
-The Differentiable Synthetic Population Generation Algorithm represents a significant step forward in population synthesis, offering a flexible, efficient, and scalable solution. Its continuous optimization approach, grounded in differentiable programming, sets it apart from traditional methods and opens up new avenues for research and application in demographic modeling and beyond.
-
----
-
 This documentation provides an overview of the algorithm, highlighting its novel approach and potential areas for further enhancement. It's suitable for a GitHub page where developers and researchers can understand the core concepts, the innovation behind the method, and areas for future work.
