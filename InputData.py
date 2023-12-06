@@ -87,9 +87,12 @@ ethnicdf = ethnicdf.drop(columns=[col for col in ethnicdf.columns if '0' in col]
 
 religiondf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Religion.csv'))
 religiondf = religiondf[religiondf['geography code'].isin(oxford_areas)]
+#raname columns
+religiondf = religiondf.rename(columns={'N': 'NR', 'O': 'OR'})
 
-mstatusdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Marital.csv'))
-mstatusdf = mstatusdf[mstatusdf['geography code'].isin(oxford_areas)]
+
+maritaldf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Marital.csv'))
+maritaldf = maritaldf[maritaldf['geography code'].isin(oxford_areas)]
 
 qualdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Qualification.csv'))
 qualdf = qualdf[qualdf['geography code'].isin(oxford_areas)]
