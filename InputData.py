@@ -97,12 +97,9 @@ maritaldf = maritaldf[maritaldf['geography code'].isin(oxford_areas)]
 qualdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Qualification.csv'))
 qualdf = qualdf[qualdf['geography code'].isin(oxford_areas)]
 
-# HHsizedf = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'individual', 'HH_size.csv'))
-# HHsizedf = HHsizedf[HHsizedf['geography code'] == 'E02005949']
-#
-# HHcomdf = pd.read_csv(os.path.join(path, 'SPONGE', 'Census_2011_MSOA', 'individual', 'HH_composition.csv'))
-# HHcomdf = HHcomdf[HHcomdf['geography code'] == 'E02005949']
-#
-# HHtypedf = pd.read_csv(os.path.join(path, 'SPONGE', 'Census_2011_MSOA', 'individual', 'HH_type.csv'))
-# HHtypedf = HHtypedf[HHtypedf['geography code'] == 'E02005949']
+HHsizedf = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'individual', 'HH_size.csv'))
+
+HHcomdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'HH_composition.csv'))
+
+HHtypedf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual','HH_type.csv'))
 
