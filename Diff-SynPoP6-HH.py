@@ -27,52 +27,33 @@ class FFNetwork(nn.Module):
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 path = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP')
-
 print(path)
+
 #MSOA
 area = 'E02005924'
 total = ID.get_total(ID.age5ydf, area)
 
-sex_dict = ID.getdictionary(ID.sexdf, area)
-age_dict = ID.getdictionary(ID.age5ydf, area)
-ethnic_dict = ID.getdictionary(ID.ethnicdf, area)
-religion_dict = ID.getdictionary(ID.religiondf, area)
-marital_dict = ID.getdictionary(ID.maritaldf, area)
-qual_dict = ID.getdictionary(ID.qualdf, area)
-
+HH_type_dict = ID.getdictionary(ID.HHtypedf, area)
+HH_size_dict = ID.getdictionary(ID.HHsizedf, area)
+HH_comp_dict = ID.getdictionary(ID.HHcomdf, area)
 
 category_lengths = {
-    'sex': len(sex_dict),
-    'age': len(age_dict),
-    'ethnicity': len(ethnic_dict),
-    'religion': len(religion_dict),
-    'marital': len(marital_dict),
-    'qual': len(qual_dict)
+    'type': len(HH_type_dict),
+    'size': len(HH_size_dict),
+    'comp': len(HH_comp_dict),
 }
 
-cross_table1 = ICT.getdictionary(ICT.ethnic_by_sex_by_age, area)
-cross_table2 = ICT.getdictionary(ICT.religion_by_sex_by_age, area)
-cross_table3 = ICT.convert_marital_cross_table(ICT.getdictionary(ICT.marital_by_sex_by_age, area))
-cross_table4 = ICT.convert_qualification_cross_table(ICT.getdictionary(ICT.qualification_by_sex_by_age, area))
-
+cross_table1 = ICT.convert_household_cross_table(ICT.getdictionary(ICT.HH_composition_by_sex_by_age, area))
 
 cross_table_tensor1 = torch.tensor(list(cross_table1.values()), dtype=torch.float32).to(device)
-cross_table_tensor2 = torch.tensor(list(cross_table2.values()), dtype=torch.float32).to(device)
-cross_table_tensor3 = torch.tensor(list(cross_table3.values()), dtype=torch.float32).to(device)
-cross_table_tensor4 = torch.tensor(list(cross_table4.values()), dtype=torch.float32).to(device)
 
 # Instantiate networks for each characteristic
-input_dim = len(sex_dict.keys()) + len(age_dict.keys()) + len(ethnic_dict.keys()) + \
-            len(religion_dict.keys()) + len(marital_dict.keys()) + len(qual_dict.keys())
-
+input_dim = len(HH_type_dict.keys()) + len(HH_size_dict.keys()) + len(HH_comp_dict.keys())
 hidden_dims = [64, 32]
 
-sex_net = FFNetwork(input_dim, hidden_dims, len(sex_dict)).to(device)
-age_net = FFNetwork(input_dim, hidden_dims, len(age_dict)).to(device)
-ethnic_net = FFNetwork(input_dim, hidden_dims, len(ethnic_dict)).to(device)
-relgion_net = FFNetwork(input_dim, hidden_dims, len(religion_dict)).to(device)
-marital_net = FFNetwork(input_dim, hidden_dims, len(marital_dict)).to(device)
-qual_net = FFNetwork(input_dim, hidden_dims, len(qual_dict)).to(device)
+type_net = FFNetwork(input_dim, hidden_dims, len(HH_type_dict)).to(device)
+size_net = FFNetwork(input_dim, hidden_dims, len(HH_size_dict)).to(device)
+comp_net = FFNetwork(input_dim, hidden_dims, len(HH_comp_dict)).to(device)
 
 # input for the networks
 input_tensor = torch.randn(total, input_dim).to(device)  # Random noise as input, adjust as necessary
@@ -86,21 +67,15 @@ def gumbel_softmax_sample(logits, temperature=0.5):
 
 # Define a function to generate the population
 def generate_population(input_tensor, temperature=0.5):
-    sex_logits = sex_net(input_tensor)
-    age_logits = age_net(input_tensor)
-    ethnicity_logits = ethnic_net(input_tensor)
-    relgion_logits = relgion_net(input_tensor)
-    marital_logits = marital_net(input_tensor)
-    qual_logits = qual_net(input_tensor)
+    type_logits = type_net(input_tensor)
+    size_logits = size_net(input_tensor)
+    comp_logits = comp_net(input_tensor)
 
-    sex = gumbel_softmax_sample(sex_logits, temperature)
-    age = gumbel_softmax_sample(age_logits, temperature)
-    ethnicity = gumbel_softmax_sample(ethnicity_logits, temperature)
-    relgion = gumbel_softmax_sample(relgion_logits, temperature)
-    marital = gumbel_softmax_sample(marital_logits, temperature)
-    qual = gumbel_softmax_sample(qual_logits, temperature)
+    type = gumbel_softmax_sample(type_logits, temperature)
+    size = gumbel_softmax_sample(size_logits, temperature)
+    comp = gumbel_softmax_sample(comp_logits, temperature)
 
-    return torch.cat([sex, age, ethnicity, relgion, marital, qual], dim=-1)
+    return torch.cat([type, size, comp], dim=-1)
 
 def aggregate(encoded_tensor, cross_table, category_dicts):
     # Calculate split sizes based on category dictionaries
@@ -202,6 +177,7 @@ def rmse_accuracy(target_tensor, computed_tensor):
     return accuracy.item()
 
 # encoded_population = generate_population(input_tensor).cuda()
+# print(decode_tensor(encoded_population, [HH_type_dict, HH_size_dict, HH_comp_dict]))
 # records = decode_tensor(encoded_population, [sex_dict, age_dict, ethnic_dict, religion_dict, marital_dict, qual_dict])
 # categories_to_keep = ['sex', 'age', 'marital']  # Categories to keep
 # kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
@@ -220,12 +196,9 @@ def rmse_loss(aggregated_tensor, target_tensor):
 
 start = time.time()
 # Training loop
-optimizer = torch.optim.Adam([{'params': sex_net.parameters()},
-                              {'params': age_net.parameters()},
-                              {'params': ethnic_net.parameters()},
-                              {'params': relgion_net.parameters()},
-                              {'params': marital_net.parameters()},
-                              {'params': qual_net.parameters()}], lr=0.001)
+optimizer = torch.optim.Adam([{'params': type_net.parameters()},
+                              {'params': size_net.parameters()},
+                              {'params': comp_net.parameters()}], lr=0.001)
 
 number_of_epochs = 70
 for epoch in range(number_of_epochs):

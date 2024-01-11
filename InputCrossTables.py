@@ -128,6 +128,45 @@ def convert_qualification_cross_table(old_cross_table):
 
     return new_cross_table
 
+
+def convert_household_cross_table(old_cross_table):
+    new_age_categories = ['0-4', '5-7', '8-9', '10-14', '15', '16-17', '18-19', '20-24',
+                          '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59',
+                          '60-64', '65-69', '70-74', '75-79', '80-84', '85+']
+    household_compositions = ['1E_0C', '1A_0C', '2E_0C', '3A_1C', '3A_0C', '2A_0C', '2A_1C', '2A_3C', '1A_1C']
+    genders = ['M', 'F']
+
+    # Initialize new cross table with all zeros
+    new_cross_table = {}
+    for gender in genders:
+        for age in new_age_categories:
+            for comp in household_compositions:
+                new_cross_table[f'{gender} {age} {comp}'] = 0
+
+    # Map the old age ranges to the new age categories
+    age_range_mapping = {
+        '0-15': ['0-4', '5-7', '8-9', '10-14', '15'],
+        '16-24': ['16-17', '18-19', '20-24'],
+        '25-34': ['25-29', '30-34'],
+        '35-49': ['35-39', '40-44', '45-49'],
+        '50+': ['50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80-84', '85+']
+    }
+
+    # Distribute counts uniformly
+    for key, value in old_cross_table.items():
+        parts = key.split(' ')
+        gender, old_age_range, household_comp = parts[0], parts[1], parts[2]
+
+        if old_age_range in age_range_mapping:
+            new_ages = age_range_mapping[old_age_range]
+            count_per_age = round(value / len(new_ages))  # Uniform distribution
+
+            for new_age in new_ages:
+                new_key = f'{gender} {new_age} {household_comp}'
+                new_cross_table[new_key] += count_per_age
+
+    return new_cross_table
+
 path = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP')
 
 sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'sex_by_age_5yrs.csv'))
@@ -145,56 +184,65 @@ marital_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'cro
 qualification_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'qualification_by_sex_by_age.csv'))
 # print(convert_qualification_cross_table(getdictionary(qualification_by_sex_by_age, 'E02005924')))
 HH_composition_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'HH_composition_by_sex_by_age.csv'))
+HH_composition_by_sex_by_age['M 0-15 2A_0C'] = HH_composition_by_sex_by_age['M 0-15 2A_0C_a']+HH_composition_by_sex_by_age['M 0-15 2A_0C_b']
+HH_composition_by_sex_by_age['M 0-15 2A_1C'] = HH_composition_by_sex_by_age['M 0-15 2A_1C_a']+HH_composition_by_sex_by_age['M 0-15 2A_1C_b']
+HH_composition_by_sex_by_age['M 0-15 2A_3C'] = HH_composition_by_sex_by_age['M 0-15 2A_3C_a']+HH_composition_by_sex_by_age['M 0-15 2A_3C_b']
+HH_composition_by_sex_by_age['M 0-15 1A_1C'] = HH_composition_by_sex_by_age['M 0-15 1A_1C_a']+HH_composition_by_sex_by_age['M 0-15 1A_1C_b']
 
-# HH_composition_by_sex_by_age['M 0-15 2A_0C'] = HH_composition_by_sex_by_age['M 0-15 2A_0C_a']+HH_composition_by_sex_by_age['M 0-15 2A_0C_b']
-# HH_composition_by_sex_by_age['M 0-15 2A_1C'] = HH_composition_by_sex_by_age['M 0-15 2A_1C_a']+HH_composition_by_sex_by_age['M 0-15 2A_1C_b']
-# HH_composition_by_sex_by_age['M 0-15 2A_3C'] = HH_composition_by_sex_by_age['M 0-15 2A_3C_a']+HH_composition_by_sex_by_age['M 0-15 2A_3C_b']
-# HH_composition_by_sex_by_age['M 0-15 1A_1C'] = HH_composition_by_sex_by_age['M 0-15 1A_1C_a']+HH_composition_by_sex_by_age['M 0-15 1A_1C_b']
+HH_composition_by_sex_by_age['M 16-24 2A_0C'] = HH_composition_by_sex_by_age['M 16-24 2A_0C_a']+HH_composition_by_sex_by_age['M 16-24 2A_0C_b']
+HH_composition_by_sex_by_age['M 16-24 2A_1C'] = HH_composition_by_sex_by_age['M 16-24 2A_1C_a']+HH_composition_by_sex_by_age['M 16-24 2A_1C_b']
+HH_composition_by_sex_by_age['M 16-24 2A_3C'] = HH_composition_by_sex_by_age['M 16-24 2A_3C_a']+HH_composition_by_sex_by_age['M 16-24 2A_3C_b']
+HH_composition_by_sex_by_age['M 16-24 1A_1C'] = HH_composition_by_sex_by_age['M 16-24 1A_1C_a']+HH_composition_by_sex_by_age['M 16-24 1A_1C_b']
+
+HH_composition_by_sex_by_age['M 25-34 2A_0C'] = HH_composition_by_sex_by_age['M 25-34 2A_0C_a']+HH_composition_by_sex_by_age['M 25-34 2A_0C_b']
+HH_composition_by_sex_by_age['M 25-34 2A_1C'] = HH_composition_by_sex_by_age['M 25-34 2A_1C_a']+HH_composition_by_sex_by_age['M 25-34 2A_1C_b']
+HH_composition_by_sex_by_age['M 25-34 2A_3C'] = HH_composition_by_sex_by_age['M 25-34 2A_3C_a']+HH_composition_by_sex_by_age['M 25-34 2A_3C_b']
+HH_composition_by_sex_by_age['M 25-34 1A_1C'] = HH_composition_by_sex_by_age['M 25-34 1A_1C_a']+HH_composition_by_sex_by_age['M 25-34 1A_1C_b']
+
+HH_composition_by_sex_by_age['M 35-49 2A_0C'] = HH_composition_by_sex_by_age['M 35-49 2A_0C_a']+HH_composition_by_sex_by_age['M 35-49 2A_0C_b']
+HH_composition_by_sex_by_age['M 35-49 2A_1C'] = HH_composition_by_sex_by_age['M 35-49 2A_1C_a']+HH_composition_by_sex_by_age['M 35-49 2A_1C_b']
+HH_composition_by_sex_by_age['M 35-49 2A_3C'] = HH_composition_by_sex_by_age['M 35-49 2A_3C_a']+HH_composition_by_sex_by_age['M 35-49 2A_3C_b']
+HH_composition_by_sex_by_age['M 35-49 1A_1C'] = HH_composition_by_sex_by_age['M 35-49 1A_1C_a']+HH_composition_by_sex_by_age['M 35-49 1A_1C_b']
+
+HH_composition_by_sex_by_age['M 50+ 2A_0C'] = HH_composition_by_sex_by_age['M 50+ 2A_0C_a']+HH_composition_by_sex_by_age['M 50+ 2A_0C_b']
+HH_composition_by_sex_by_age['M 50+ 2A_1C'] = HH_composition_by_sex_by_age['M 50+ 2A_1C_a']+HH_composition_by_sex_by_age['M 50+ 2A_1C_b']
+HH_composition_by_sex_by_age['M 50+ 2A_3C'] = HH_composition_by_sex_by_age['M 50+ 2A_3C_a']+HH_composition_by_sex_by_age['M 50+ 2A_3C_b']
+HH_composition_by_sex_by_age['M 50+ 1A_1C'] = HH_composition_by_sex_by_age['M 50+ 1A_1C_a']+HH_composition_by_sex_by_age['M 50+ 1A_1C_b']
+
+HH_composition_by_sex_by_age['F 0-15 2A_0C'] = HH_composition_by_sex_by_age['F 0-15 2A_0C_a']+HH_composition_by_sex_by_age['F 0-15 2A_0C_b']
+HH_composition_by_sex_by_age['F 0-15 2A_1C'] = HH_composition_by_sex_by_age['F 0-15 2A_1C_a']+HH_composition_by_sex_by_age['F 0-15 2A_1C_b']
+HH_composition_by_sex_by_age['F 0-15 2A_3C'] = HH_composition_by_sex_by_age['F 0-15 2A_3C_a']+HH_composition_by_sex_by_age['F 0-15 2A_3C_b']
+HH_composition_by_sex_by_age['F 0-15 1A_1C'] = HH_composition_by_sex_by_age['F 0-15 1A_1C_a']+HH_composition_by_sex_by_age['F 0-15 1A_1C_b']
+
+HH_composition_by_sex_by_age['F 16-24 2A_0C'] = HH_composition_by_sex_by_age['F 16-24 2A_0C_a']+HH_composition_by_sex_by_age['F 16-24 2A_0C_b']
+HH_composition_by_sex_by_age['F 16-24 2A_1C'] = HH_composition_by_sex_by_age['F 16-24 2A_1C_a']+HH_composition_by_sex_by_age['F 16-24 2A_1C_b']
+HH_composition_by_sex_by_age['F 16-24 2A_3C'] = HH_composition_by_sex_by_age['F 16-24 2A_3C_a']+HH_composition_by_sex_by_age['F 16-24 2A_3C_b']
+HH_composition_by_sex_by_age['F 16-24 1A_1C'] = HH_composition_by_sex_by_age['F 16-24 1A_1C_a']+HH_composition_by_sex_by_age['F 16-24 1A_1C_b']
+
+HH_composition_by_sex_by_age['F 25-34 2A_0C'] = HH_composition_by_sex_by_age['F 25-34 2A_0C_a']+HH_composition_by_sex_by_age['F 25-34 2A_0C_b']
+HH_composition_by_sex_by_age['F 25-34 2A_1C'] = HH_composition_by_sex_by_age['F 25-34 2A_1C_a']+HH_composition_by_sex_by_age['F 25-34 2A_1C_b']
+HH_composition_by_sex_by_age['F 25-34 2A_3C'] = HH_composition_by_sex_by_age['F 25-34 2A_3C_a']+HH_composition_by_sex_by_age['F 25-34 2A_3C_b']
+HH_composition_by_sex_by_age['F 25-34 1A_1C'] = HH_composition_by_sex_by_age['F 25-34 1A_1C_a']+HH_composition_by_sex_by_age['F 25-34 1A_1C_b']
+
+HH_composition_by_sex_by_age['F 35-49 2A_0C'] = HH_composition_by_sex_by_age['F 35-49 2A_0C_a']+HH_composition_by_sex_by_age['F 35-49 2A_0C_b']
+HH_composition_by_sex_by_age['F 35-49 2A_1C'] = HH_composition_by_sex_by_age['F 35-49 2A_1C_a']+HH_composition_by_sex_by_age['F 35-49 2A_1C_b']
+HH_composition_by_sex_by_age['F 35-49 2A_3C'] = HH_composition_by_sex_by_age['F 35-49 2A_3C_a']+HH_composition_by_sex_by_age['F 35-49 2A_3C_b']
+HH_composition_by_sex_by_age['F 35-49 1A_1C'] = HH_composition_by_sex_by_age['F 35-49 1A_1C_a']+HH_composition_by_sex_by_age['F 35-49 1A_1C_b']
+
+HH_composition_by_sex_by_age['F 50+ 2A_0C'] = HH_composition_by_sex_by_age['F 50+ 2A_0C_a']+HH_composition_by_sex_by_age['F 50+ 2A_0C_b']
+HH_composition_by_sex_by_age['F 50+ 2A_1C'] = HH_composition_by_sex_by_age['F 50+ 2A_1C_a']+HH_composition_by_sex_by_age['F 50+ 2A_1C_b']
+HH_composition_by_sex_by_age['F 50+ 2A_3C'] = HH_composition_by_sex_by_age['F 50+ 2A_3C_a']+HH_composition_by_sex_by_age['F 50+ 2A_3C_b']
+HH_composition_by_sex_by_age['F 50+ 1A_1C'] = HH_composition_by_sex_by_age['F 50+ 1A_1C_a']+HH_composition_by_sex_by_age['F 50+ 1A_1C_b']
+
+HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if '_a' in col])
+HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if '_b' in col])
+# result = []
+# for col in HH_composition_by_sex_by_age.columns:
+#     if col != 'geography code' and col != 'total':
+#         val = col.split(' ')[1]
+#         if val not in result:
+#             result.append(val)
 #
-# HH_composition_by_sex_by_age['M 16-24 2A_0C'] = HH_composition_by_sex_by_age['M 16-24 2A_0C_a']+HH_composition_by_sex_by_age['M 16-24 2A_0C_b']
-# HH_composition_by_sex_by_age['M 16-24 2A_1C'] = HH_composition_by_sex_by_age['M 16-24 2A_1C_a']+HH_composition_by_sex_by_age['M 16-24 2A_1C_b']
-# HH_composition_by_sex_by_age['M 16-24 2A_3C'] = HH_composition_by_sex_by_age['M 16-24 2A_3C_a']+HH_composition_by_sex_by_age['M 16-24 2A_3C_b']
-# HH_composition_by_sex_by_age['M 16-24 1A_1C'] = HH_composition_by_sex_by_age['M 16-24 1A_1C_a']+HH_composition_by_sex_by_age['M 16-24 1A_1C_b']
-#
-# HH_composition_by_sex_by_age['M 25-34 2A_0C'] = HH_composition_by_sex_by_age['M 25-34 2A_0C_a']+HH_composition_by_sex_by_age['M 25-34 2A_0C_b']
-# HH_composition_by_sex_by_age['M 25-34 2A_1C'] = HH_composition_by_sex_by_age['M 25-34 2A_1C_a']+HH_composition_by_sex_by_age['M 25-34 2A_1C_b']
-# HH_composition_by_sex_by_age['M 25-34 2A_3C'] = HH_composition_by_sex_by_age['M 25-34 2A_3C_a']+HH_composition_by_sex_by_age['M 25-34 2A_3C_b']
-# HH_composition_by_sex_by_age['M 25-34 1A_1C'] = HH_composition_by_sex_by_age['M 25-34 1A_1C_a']+HH_composition_by_sex_by_age['M 25-34 1A_1C_b']
-#
-# HH_composition_by_sex_by_age['M 35-49 2A_0C'] = HH_composition_by_sex_by_age['M 35-49 2A_0C_a']+HH_composition_by_sex_by_age['M 35-49 2A_0C_b']
-# HH_composition_by_sex_by_age['M 35-49 2A_1C'] = HH_composition_by_sex_by_age['M 35-49 2A_1C_a']+HH_composition_by_sex_by_age['M 35-49 2A_1C_b']
-# HH_composition_by_sex_by_age['M 35-49 2A_3C'] = HH_composition_by_sex_by_age['M 35-49 2A_3C_a']+HH_composition_by_sex_by_age['M 35-49 2A_3C_b']
-# HH_composition_by_sex_by_age['M 35-49 1A_1C'] = HH_composition_by_sex_by_age['M 35-49 1A_1C_a']+HH_composition_by_sex_by_age['M 35-49 1A_1C_b']
-#
-# HH_composition_by_sex_by_age['M 50+ 2A_0C'] = HH_composition_by_sex_by_age['M 50+ 2A_0C_a']+HH_composition_by_sex_by_age['M 50+ 2A_0C_b']
-# HH_composition_by_sex_by_age['M 50+ 2A_1C'] = HH_composition_by_sex_by_age['M 50+ 2A_1C_a']+HH_composition_by_sex_by_age['M 50+ 2A_1C_b']
-# HH_composition_by_sex_by_age['M 50+ 2A_3C'] = HH_composition_by_sex_by_age['M 50+ 2A_3C_a']+HH_composition_by_sex_by_age['M 50+ 2A_3C_b']
-# HH_composition_by_sex_by_age['M 50+ 1A_1C'] = HH_composition_by_sex_by_age['M 50+ 1A_1C_a']+HH_composition_by_sex_by_age['M 50+ 1A_1C_b']
-#
-# HH_composition_by_sex_by_age['F 0-15 2A_0C'] = HH_composition_by_sex_by_age['F 0-15 2A_0C_a']+HH_composition_by_sex_by_age['F 0-15 2A_0C_b']
-# HH_composition_by_sex_by_age['F 0-15 2A_1C'] = HH_composition_by_sex_by_age['F 0-15 2A_1C_a']+HH_composition_by_sex_by_age['F 0-15 2A_1C_b']
-# HH_composition_by_sex_by_age['F 0-15 2A_3C'] = HH_composition_by_sex_by_age['F 0-15 2A_3C_a']+HH_composition_by_sex_by_age['F 0-15 2A_3C_b']
-# HH_composition_by_sex_by_age['F 0-15 1A_1C'] = HH_composition_by_sex_by_age['F 0-15 1A_1C_a']+HH_composition_by_sex_by_age['F 0-15 1A_1C_b']
-#
-# HH_composition_by_sex_by_age['F 16-24 2A_0C'] = HH_composition_by_sex_by_age['F 16-24 2A_0C_a']+HH_composition_by_sex_by_age['F 16-24 2A_0C_b']
-# HH_composition_by_sex_by_age['F 16-24 2A_1C'] = HH_composition_by_sex_by_age['F 16-24 2A_1C_a']+HH_composition_by_sex_by_age['F 16-24 2A_1C_b']
-# HH_composition_by_sex_by_age['F 16-24 2A_3C'] = HH_composition_by_sex_by_age['F 16-24 2A_3C_a']+HH_composition_by_sex_by_age['F 16-24 2A_3C_b']
-# HH_composition_by_sex_by_age['F 16-24 1A_1C'] = HH_composition_by_sex_by_age['F 16-24 1A_1C_a']+HH_composition_by_sex_by_age['F 16-24 1A_1C_b']
-#
-# HH_composition_by_sex_by_age['F 25-34 2A_0C'] = HH_composition_by_sex_by_age['F 25-34 2A_0C_a']+HH_composition_by_sex_by_age['F 25-34 2A_0C_b']
-# HH_composition_by_sex_by_age['F 25-34 2A_1C'] = HH_composition_by_sex_by_age['F 25-34 2A_1C_a']+HH_composition_by_sex_by_age['F 25-34 2A_1C_b']
-# HH_composition_by_sex_by_age['F 25-34 2A_3C'] = HH_composition_by_sex_by_age['F 25-34 2A_3C_a']+HH_composition_by_sex_by_age['F 25-34 2A_3C_b']
-# HH_composition_by_sex_by_age['F 25-34 1A_1C'] = HH_composition_by_sex_by_age['F 25-34 1A_1C_a']+HH_composition_by_sex_by_age['F 25-34 1A_1C_b']
-#
-# HH_composition_by_sex_by_age['F 35-49 2A_0C'] = HH_composition_by_sex_by_age['F 35-49 2A_0C_a']+HH_composition_by_sex_by_age['F 35-49 2A_0C_b']
-# HH_composition_by_sex_by_age['F 35-49 2A_1C'] = HH_composition_by_sex_by_age['F 35-49 2A_1C_a']+HH_composition_by_sex_by_age['F 35-49 2A_1C_b']
-# HH_composition_by_sex_by_age['F 35-49 2A_3C'] = HH_composition_by_sex_by_age['F 35-49 2A_3C_a']+HH_composition_by_sex_by_age['F 35-49 2A_3C_b']
-# HH_composition_by_sex_by_age['F 35-49 1A_1C'] = HH_composition_by_sex_by_age['F 35-49 1A_1C_a']+HH_composition_by_sex_by_age['F 35-49 1A_1C_b']
-#
-# HH_composition_by_sex_by_age['F 50+ 2A_0C'] = HH_composition_by_sex_by_age['F 50+ 2A_0C_a']+HH_composition_by_sex_by_age['F 50+ 2A_0C_b']
-# HH_composition_by_sex_by_age['F 50+ 2A_1C'] = HH_composition_by_sex_by_age['F 50+ 2A_1C_a']+HH_composition_by_sex_by_age['F 50+ 2A_1C_b']
-# HH_composition_by_sex_by_age['F 50+ 2A_3C'] = HH_composition_by_sex_by_age['F 50+ 2A_3C_a']+HH_composition_by_sex_by_age['F 50+ 2A_3C_b']
-# HH_composition_by_sex_by_age['F 50+ 1A_1C'] = HH_composition_by_sex_by_age['F 50+ 1A_1C_a']+HH_composition_by_sex_by_age['F 50+ 1A_1C_b']
-#
-# HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if '_a' in col])
-# HH_composi# tion_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if '_b' in col])
+# print(result)
+
+# print(convert_household_cross_table(getdictionary(HH_composition_by_sex_by_age, 'E02005924')))
