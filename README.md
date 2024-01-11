@@ -13,27 +13,10 @@ Certainly! Here's a concise explanation of encoding the 'sex' attribute using th
 
 ### Encoding 'Sex' Attribute Using Gumbel-Softmax
 
-1. **Neural Network Output (Logits)**
-   - The neural network outputs logits, \( l \), for each category of 'sex' (e.g., 'male', 'female'). Logits are raw, unnormalized scores.
-
-2. **Gumbel Noise**
-   - Gumbel noise, \( G \), is added to the logits. It's computed as \( G = -\log(-\log(U)) \) where \( U \) is a uniform random variable, \( U \sim \text{Uniform}(0, 1) \).
-
-3. **Softmax Transformation**
-   - The perturbed logits, \( l + G \), are passed through a Softmax function: 
-   \( \text{Softmax}(x_i) = \frac{\exp(x_i / \tau)}{\sum_j \exp(x_j / \tau)} \)
-   - The temperature parameter, \( \tau \), controls the "sharpness" of the distribution.
-
-4. **Sampling**
-   - The output is a probability distribution over the categories ('male', 'female'). A sample drawn from this distribution selects a category.
-
-### Benefits for 'Sex' Attribute
-
-- **Differentiable Sampling**: Enables the use of gradient-based optimization techniques.
-- **Discrete Attribute Handling**: Suitable for modeling discrete attributes in neural networks.
-- **Controlled Variance**: The temperature parameter \( \tau \) offers control over the output distribution's variance.
+![img.png](img.png)
 
 This Gumbel-Softmax approach allows the 'sex' attribute to be encoded in a way that's compatible with the requirements of neural network training and optimization, particularly for handling discrete data categories.
+
 ### 1. **System Design**
    - **PyTorch Libraries**: For neural network operations and tensor manipulation.
    - **Custom Modules (`InputData`, `InputCrossTables`)**: For UK Census data handling and cross-table data structures.
