@@ -95,6 +95,9 @@ def decode_tensor(encoded_tensor):
     decoded_ethnicity = [ethnic_categories[torch.argmax(e).item()] for e in encoded_ethnicity]
     return list(zip(decoded_sex, decoded_age, decoded_ethnicity))
 
+encode = generate_population(input_tensor)
+decode = decode_tensor(encode)
+print(decode)
 def rmse_accuracy(target_tensor, computed_tensor):
     mse = torch.mean((target_tensor - computed_tensor) ** 2)
     rmse = torch.sqrt(mse)
@@ -104,62 +107,62 @@ def rmse_accuracy(target_tensor, computed_tensor):
 
 def rmse_loss(aggregated_tensor, target_tensor):
     return torch.sqrt(torch.mean((aggregated_tensor - target_tensor) ** 2))
-
-# Training loop
-optimizer = torch.optim.Adam([{'params': sex_net.parameters()},
-                              {'params': age_net.parameters()},
-                              {'params': ethnic_net.parameters()}], lr=0.01)
-
-number_of_epochs = 100
-for epoch in range(number_of_epochs):
-    optimizer.zero_grad()
-
-    # Generate and aggregate encoded population
-    encoded_population = generate_population(input_tensor).cuda()
-    aggregated_population = aggregate_softmax_encoded_tensor(encoded_population).cuda()
-
-    # Compute and backpropagate loss
-    loss = rmse_loss(aggregated_population, cross_table_tensor.cuda())
-    loss.backward()
-    optimizer.step()
-
-    if epoch % 10 == 0:
-        print(f"Epoch {epoch}, Loss: {loss.item()}")
-
-
-# Decode the final population
-final_population = decode_tensor(encoded_population.detach())
-
-# Aggregate the final population
-final_aggregated_population = aggregate_softmax_encoded_tensor(encoded_population.detach())
-
-def plot(target, computed):
-    accuracy = rmse_accuracy(target.cpu(), computed.cpu())
-    # Create bar plots for both dictionaries
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=list(cross_table.keys()),
-        y=list(target.tolist()),
-        name='Target',
-        marker_color='#636EFA'
-    ))
-    fig.add_trace(go.Bar(
-        x=list(cross_table.keys()),
-        y=list(computed.tolist()),
-        name='Computed',
-        marker_color='#EF553B'
-    ))
-
-    fig.update_layout(
-        title= 'Model Accuracy:' + str(accuracy),
-        xaxis_tickangle=-90,
-        xaxis_title='Categories',
-        yaxis_title='Counts',
-        barmode='group',
-        bargap=0.5,
-        width=9000
-    )
-
-    # Show plot
-    fig.show()
-plot(cross_table_tensor, final_aggregated_population)
+#
+# # Training loop
+# optimizer = torch.optim.Adam([{'params': sex_net.parameters()},
+#                               {'params': age_net.parameters()},
+#                               {'params': ethnic_net.parameters()}], lr=0.01)
+#
+# number_of_epochs = 100
+# for epoch in range(number_of_epochs):
+#     optimizer.zero_grad()
+#
+#     # Generate and aggregate encoded population
+#     encoded_population = generate_population(input_tensor).cuda()
+#     aggregated_population = aggregate_softmax_encoded_tensor(encoded_population).cuda()
+#
+#     # Compute and backpropagate loss
+#     loss = rmse_loss(aggregated_population, cross_table_tensor.cuda())
+#     loss.backward()
+#     optimizer.step()
+#
+#     if epoch % 10 == 0:
+#         print(f"Epoch {epoch}, Loss: {loss.item()}")
+#
+#
+# # Decode the final population
+# final_population = decode_tensor(encoded_population.detach())
+#
+# # Aggregate the final population
+# final_aggregated_population = aggregate_softmax_encoded_tensor(encoded_population.detach())
+#
+# def plot(target, computed):
+#     accuracy = rmse_accuracy(target.cpu(), computed.cpu())
+#     # Create bar plots for both dictionaries
+#     fig = go.Figure()
+#     fig.add_trace(go.Bar(
+#         x=list(cross_table.keys()),
+#         y=list(target.tolist()),
+#         name='Target',
+#         marker_color='#636EFA'
+#     ))
+#     fig.add_trace(go.Bar(
+#         x=list(cross_table.keys()),
+#         y=list(computed.tolist()),
+#         name='Computed',
+#         marker_color='#EF553B'
+#     ))
+#
+#     fig.update_layout(
+#         title= 'Model Accuracy:' + str(accuracy),
+#         xaxis_tickangle=-90,
+#         xaxis_title='Categories',
+#         yaxis_title='Counts',
+#         barmode='group',
+#         bargap=0.5,
+#         width=9000
+#     )
+#
+#     # Show plot
+#     fig.show()
+# plot(cross_table_tensor, final_aggregated_population)
