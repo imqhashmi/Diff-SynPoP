@@ -3,11 +3,10 @@
 ### Summary
 This codebase provides a differentiable approach for generating synthetic demographic data, employing a combination of neural networks, tensor operations, and data aggregation techniques.
 
-
-The novelty of the script's approach, particularly in the context of differentiability, lies in its innovative use of the Gumbel-Softmax function and modular neural network architecture. Let's delve into how this contributes to the script's differentiability and the main benefits of this approach:
+The novelty of the approach, in the context of differentiability, lies in its innovative use of the Gumbel-Softmax function and modular neural network architecture.
 
 ### Differentiable Approach:
-1. **Gumbel-Softmax for Discrete Data Generation**: Typically, generating discrete data (like categorical demographic characteristics) is challenging in gradient-based optimization because the process is non-differentiable. The Gumbel-Softmax function is a clever solution to this issue. It approximates categorical distributions in a way that is continuous and differentiable, allowing standard backpropagation techniques to be used for training neural networks. This method bridges the gap between the need for discrete outputs and the requirement for differentiable operations in neural network training.
+1. **Gumbel-Softmax for Discrete Data Generation**: Typically, generating discrete data (like categorical demographic characteristics) is challenging in gradient-based optimization because the process is non-differentiable. The Gumbel-Softmax function is a clever use to approximate categorical distributions in a way that is continuous and differentiable, allowing standard backpropagation techniques to be used for training neural networks. This method bridges the gap between the need for discrete outputs and the requirement for differentiable operations in neural network training.
 
 2. **Modular Neural Networks**: The script uses distinct neural networks for different demographic characteristics, each learning to model a specific aspect of the data. This modular architecture allows each network to focus on one demographic feature at a time, making the learning process more manageable and efficient. Additionally, the use of linear layers and ReLU activations in these networks ensures that the entire model is differentiable, allowing for effective gradient-based optimization.
 
