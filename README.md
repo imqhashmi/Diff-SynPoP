@@ -3,8 +3,6 @@
 ### Summary
 This codebase provides a differentiable approach for generating synthetic demographic data, employing a combination of neural networks, tensor operations, and data aggregation techniques.
 
-The novelty of the approach, in the context of differentiability, lies in its innovative use of the Gumbel-Softmax function and modular neural network architecture.
-
 ### Differentiable Approach:
 1. **Gumbel-Softmax for Discrete Data Generation**: Typically, generating discrete data (like categorical demographic characteristics) is challenging in gradient-based optimization because the process is non-differentiable. The Gumbel-Softmax function is a clever use to approximate categorical distributions in a way that is continuous and differentiable, allowing standard backpropagation techniques to be used for training neural networks. This method bridges the gap between the need for discrete outputs and the requirement for differentiable operations in neural network training.
 The Gumbel-Softmax technique provides a way to sample from a categorical distribution in a manner that is differentiable and therefore compatible with gradient-based optimization methods. It's particularly useful when dealing with attributes like 'sex' in neural network models where you need a differentiable approximation of discrete variables. Let's break down how this process works using the 'sex' attribute as an example:
