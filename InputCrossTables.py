@@ -48,6 +48,28 @@ def getdictionary(df, area):
             dic[column] = int(row[column])
     return dic
 
+def aggregate_age(data):
+    # Define age brackets
+    child_ages = ['0-4', '5-7', '8-9', '10-14', '15', '16-17', '18-19']
+    adult_ages = ['20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64']
+    elder_ages = ['65-69', '70-74', '75-79', '80-84', '85+']
+
+    aggregate = {}
+    for key in data.keys():
+        aggregate[key.split(' ')[0] + ' child ' + key.split(' ')[2]] = 0
+        aggregate[key.split(' ')[0] + ' adult ' + key.split(' ')[2]] = 0
+        aggregate[key.split(' ')[0] + ' elder ' + key.split(' ')[2]] = 0
+
+    for key, val in data.items():
+        k = key.split(' ')
+        if k[1] in child_ages:
+            aggregate[k[0] + ' child ' + k[2]] +=val
+        elif k[1] in adult_ages:
+            aggregate[k[0] + ' adult ' + k[2]] +=val
+        elif k[1] in elder_ages:
+            aggregate[k[0] + ' elder ' + k[2]] +=val
+    return aggregate
+
 def plot(actual, predicted, rmse):
     fig = go.Figure()
     fig.add_trace(
@@ -170,13 +192,18 @@ def convert_household_cross_table(old_cross_table):
 path = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP')
 
 sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'sex_by_age_5yrs.csv'))
+cols = [(col.split(' ')[1] + ' ' + col.split(' ')[0]) for col in sex_by_age.columns[2:]]
+sex_by_age.columns = ['geography code', 'total'] + cols
 
 religion_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'religion_by_sex_by_age.csv'))
 religion_by_sex_by_age = religion_by_sex_by_age.drop(columns=[col for col in religion_by_sex_by_age.columns if 'All' in col])
 
+ethnicities = ['W0', 'M0', 'B0', 'A0', 'O0']
 ethnic_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'ethnic_by_sex_by_age.csv'))
 
 ethnic_by_religion = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'ethnic_by_religion.csv'))
+ethnic_by_religion = ethnic_by_religion.drop(columns=[col for col in ethnic_by_religion.columns[2:] if  col.split(' ')[0] not in ethnicities])
+ethnic_by_religion.columns = [col.replace('0', '') for col in ethnic_by_religion.columns]
 
 marital_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'marital_by_sex_by_age.csv'))
 # print(convert_marital_cross_table(getdictionary(marital_by_sex_by_age, 'E02005924')))
