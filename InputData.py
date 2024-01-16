@@ -70,6 +70,22 @@ def get_weighted_samples_by_age_sex(df, age, sex, size):
     weights = [x / total for x in values]
     return np.random.choice(groups, size=size, replace=True, p=weights).tolist()
 
+def aggregate_age_groups(age_distribution):
+    # Define the age categories
+    categories = {
+        'child': ['0-4', '5-7', '8-9', '10-14', '15', '16-17'],
+        'adult': ['18-19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64'],
+        'elder': ['65-69', '70-74', '75-79', '80-84', '85+']
+    }
+
+    # Initialize aggregated counts
+    aggregated_counts = {'child': 0, 'adult': 0, 'elder': 0}
+
+    # Aggregate the counts
+    for category, age_ranges in categories.items():
+        for age_range in age_ranges:
+            aggregated_counts[category] += age_distribution.get(age_range, 0)
+    return aggregated_counts
 
 path = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP')
 
@@ -83,7 +99,9 @@ sexdf = sexdf[sexdf['geography code'].isin(oxford_areas)]
 
 ethnicdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Ethnic.csv'))
 ethnicdf = ethnicdf[ethnicdf['geography code'].isin(oxford_areas)]
-ethnicdf = ethnicdf.drop(columns=[col for col in ethnicdf.columns if '0' in col]) #remove all category columns
+ethnicdf = ethnicdf.drop(columns=[col for col in ethnicdf.columns[2:] if '0' not in col]) #remove all category columns
+ethnicdf.columns = [col.replace('0', '') for col in ethnicdf.columns]
+
 
 religiondf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Religion.csv'))
 religiondf = religiondf[religiondf['geography code'].isin(oxford_areas)]
