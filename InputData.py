@@ -117,7 +117,7 @@ qualdf = qualdf[qualdf['geography code'].isin(oxford_areas)]
 
 HHsizedf = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'individual', 'HH_size.csv'))
 
-HHcomdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'HH_composition.csv'))
+HHcomdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'HH_Compositions.csv'))
 
 HHtypedf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual','HH_type.csv'))
 
