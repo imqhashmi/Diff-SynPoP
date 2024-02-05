@@ -13,15 +13,25 @@ religion_dict = ID.getdictionary(ID.religiondf, area)
 marital_dict = ID.getdictionary(ID.maritaldf, area)
 qual_dict = ID.getdictionary(ID.qualdf, area)
 
+HH_size = ID.getdictionary(ID.HHsizedf, area)
+HH_type = ID.getdictionary(ID.HHtypedf, area)
+HH_composition = ID.getdictionary(ID.HHcomdf, area)
+
+
 print('area = ', area, ' Total population = ', ID.get_total(ID.sexdf, area))
 print('Sex distribution: ', sex_dict)
 print('Age distribution: ', ID.aggregate_age_groups(age_dict))
 
-print('Ethnicity distribution: ', ethnic_dict)
-print('Religion distribution: ', religion_dict)
-print('Marital status distribution: ', marital_dict)
-print('Qualification distribution: ', qual_dict)
+print('Ethnicity distribution: ', ethnic_dict.keys())
+print('Religion distribution: ', religion_dict.keys())
+print('Marital status distribution: ', marital_dict.keys())
+print('Qualification distribution: ', qual_dict.keys())
+print(' ')
+print('Household size: ', HH_size)
+print('Household type: ', HH_type)
+print('Household composition: ', HH_composition)
 
+print('Cross Tables: ')
 
 sex_by_age = ICT.getdictionary(ICT.sex_by_age, area)
 child_ages = ['0-4', '5-7', '8-9', '10-14', '15', '16-17', '18-19']
@@ -46,4 +56,7 @@ print('Sex by Age by Religion:', ICT.aggregate_age(ICT.getdictionary(ICT.religio
 print('Ethnicity by Religion:',ICT.getdictionary(ICT.ethnic_by_religion, area))
 print('Sex by Age by Marital Status:',ICT.aggregate_age(ICT.convert_marital_cross_table(ICT.getdictionary(ICT.marital_by_sex_by_age, area))))
 print('Sex by Age by Qualification:', ICT.aggregate_age(ICT.convert_qualification_cross_table(ICT.getdictionary(ICT.qualification_by_sex_by_age, area))))
-
+print(' ')
+print('Sex by Age by Household Composition', ICT.getdictionary(ICT.HH_composition_by_sex_by_age, area))
+print('Household Composition by Ethnicity', ICT.getdictionary(ICT.HH_composition_by_Ethnicity, area))
+print('Household Composition by Religion', ICT.getdictionary(ICT.HH_composition_by_Religion, area))

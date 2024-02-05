@@ -201,9 +201,9 @@ def rmse_accuracy(target_tensor, computed_tensor):
     accuracy = 1 - (rmse / max_possible_error)
     return accuracy.item()
 
-encoded_population = generate_population(input_tensor).cuda()
-print(decode_tensor(encoded_population))
+# encoded_population = generate_population(input_tensor).cuda()
 # records = decode_tensor(encoded_population, [sex_dict, age_dict, ethnic_dict, religion_dict, marital_dict, qual_dict])
+# print(records)
 # categories_to_keep = ['sex', 'age', 'marital']  # Categories to keep
 # kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
 # aggregated_tensor = aggregate(kept_tensor, cross_table3, [sex_dict, age_dict, marital_dict])
@@ -217,7 +217,9 @@ def rmse_accuracy(target_tensor, computed_tensor):
 
 def rmse_loss(aggregated_tensor, target_tensor):
     return torch.sqrt(torch.mean((aggregated_tensor - target_tensor) ** 2))
-record execution start time
+
+
+# record execution start time
 
 start = time.time()
 # Training loop
@@ -262,7 +264,7 @@ for epoch in range(number_of_epochs):
     loss.backward()
     optimizer.step()
 
-    if epoch % 50 == 0:
+    if epoch % 10 == 0:
         print(f"Epoch {epoch}, Loss: {loss.item()}")
 
 plot(cross_table_tensor1, aggregated_population1, cross_table1, 'Age-Sex-Ethnicity')
