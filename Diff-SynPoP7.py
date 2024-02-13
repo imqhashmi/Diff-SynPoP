@@ -27,33 +27,81 @@ class FFNetwork(nn.Module):
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 path = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP')
-print(path)
 
+print(path)
 #MSOA
 area = 'E02005924'
 total = ID.get_total(ID.age5ydf, area)
 
-HH_type_dict = ID.getdictionary(ID.HHtypedf, area)
+sex_dict = ID.getdictionary(ID.sexdf, area)
+age_dict = ID.getdictionary(ID.age5ydf, area)
+ethnic_dict = ID.getdictionary(ID.ethnicdf, area)
+religion_dict = ID.getdictionary(ID.religiondf, area)
+marital_dict = ID.getdictionary(ID.maritaldf, area)
+qual_dict = ID.getdictionary(ID.qualdf, area)
+
+#households
 HH_size_dict = ID.getdictionary(ID.HHsizedf, area)
+HH_type_dict = ID.getdictionary(ID.HHtypedf, area)
 HH_comp_dict = ID.getdictionary(ID.HHcomdf, area)
 
+
+
 category_lengths = {
-    'type': len(HH_type_dict),
-    'size': len(HH_size_dict),
-    'comp': len(HH_comp_dict),
+    'sex': len(sex_dict),
+    'age': len(age_dict),
+    'ethnicity': len(ethnic_dict),
+    'religion': len(religion_dict),
+    'marital': len(marital_dict),
+    'qual': len(qual_dict),
+    'HH_size': len(HH_size_dict),
+    'HH_type': len(HH_type_dict),
+    'HH_comp': len(HH_comp_dict)
 }
 
-cross_table1 = ICT.convert_household_cross_table(ICT.getdictionary(ICT.HH_composition_by_sex_by_age, area))
+cross_table1 = ICT.getdictionary(ICT.ethnic_by_sex_by_age, area)
+cross_table2 = ICT.getdictionary(ICT.religion_by_sex_by_age, area)
+cross_table3 = ICT.convert_marital_cross_table(ICT.getdictionary(ICT.marital_by_sex_by_age, area))
+cross_table4 = ICT.convert_qualification_cross_table(ICT.getdictionary(ICT.qualification_by_sex_by_age, area))
+
+cross_table5 = ICT.getdictionary(ICT.HH_composition_by_sex_by_age, area)
+cross_table6 = ICT.getdictionary(ICT.HH_composition_by_Ethnicity, area)
+cross_table7 = ICT.getdictionary(ICT.HH_composition_by_Religion, area)
 
 cross_table_tensor1 = torch.tensor(list(cross_table1.values()), dtype=torch.float32).to(device)
+cross_table_tensor2 = torch.tensor(list(cross_table2.values()), dtype=torch.float32).to(device)
+cross_table_tensor3 = torch.tensor(list(cross_table3.values()), dtype=torch.float32).to(device)
+cross_table_tensor4 = torch.tensor(list(cross_table4.values()), dtype=torch.float32).to(device)
+
+cross_table_tensor5 = torch.tensor(list(cross_table5.values()), dtype=torch.float32).to(device)
+cross_table_tensor6 = torch.tensor(list(cross_table6.values()), dtype=torch.float32).to(device)
+cross_table_tensor7 = torch.tensor(list(cross_table7.values()), dtype=torch.float32).to(device)
+
+
+# create a mask for the cross tables with non-zero entries
+# mask1 = (cross_table_tensor1 > 0).float().to(device)
+# mask2 = (cross_table_tensor2 > 0).float().to(device)
+# mask3 = (cross_table_tensor3 > 0).float().to(device)
+# mask4 = (cross_table_tensor4 > 0).float().to(device)
+
+
 
 # Instantiate networks for each characteristic
-input_dim = len(HH_type_dict.keys()) + len(HH_size_dict.keys()) + len(HH_comp_dict.keys())
+input_dim = len(sex_dict.keys()) + len(age_dict.keys()) + len(ethnic_dict.keys()) + \
+            len(religion_dict.keys()) + len(marital_dict.keys()) + len(qual_dict.keys())
+
 hidden_dims = [64, 32]
 
-type_net = FFNetwork(input_dim, hidden_dims, len(HH_type_dict)).to(device)
-size_net = FFNetwork(input_dim, hidden_dims, len(HH_size_dict)).to(device)
-comp_net = FFNetwork(input_dim, hidden_dims, len(HH_comp_dict)).to(device)
+sex_net = FFNetwork(input_dim, hidden_dims, len(sex_dict)).to(device)
+age_net = FFNetwork(input_dim, hidden_dims, len(age_dict)).to(device)
+ethnic_net = FFNetwork(input_dim, hidden_dims, len(ethnic_dict)).to(device)
+relgion_net = FFNetwork(input_dim, hidden_dims, len(religion_dict)).to(device)
+marital_net = FFNetwork(input_dim, hidden_dims, len(marital_dict)).to(device)
+qual_net = FFNetwork(input_dim, hidden_dims, len(qual_dict)).to(device)
+HH_size_net = FFNetwork(input_dim, hidden_dims, len(HH_size_dict)).to(device)
+HH_type_net = FFNetwork(input_dim, hidden_dims, len(HH_type_dict)).to(device)
+HH_comp_net = FFNetwork(input_dim, hidden_dims, len(HH_comp_dict)).to(device)
+
 
 # input for the networks
 input_tensor = torch.randn(total, input_dim).to(device)  # Random noise as input, adjust as necessary
@@ -67,15 +115,27 @@ def gumbel_softmax_sample(logits, temperature=0.5):
 
 # Define a function to generate the population
 def generate_population(input_tensor, temperature=0.5):
-    type_logits = type_net(input_tensor)
-    size_logits = size_net(input_tensor)
-    comp_logits = comp_net(input_tensor)
+    sex_logits = sex_net(input_tensor)
+    age_logits = age_net(input_tensor)
+    ethnicity_logits = ethnic_net(input_tensor)
+    relgion_logits = relgion_net(input_tensor)
+    marital_logits = marital_net(input_tensor)
+    qual_logits = qual_net(input_tensor)
+    HH_size_logits = HH_size_net(input_tensor)
+    HH_type_logits = HH_type_net(input_tensor)
+    HH_comp_logits = HH_comp_net(input_tensor)
 
-    type = gumbel_softmax_sample(type_logits, temperature)
-    size = gumbel_softmax_sample(size_logits, temperature)
-    comp = gumbel_softmax_sample(comp_logits, temperature)
+    sex = gumbel_softmax_sample(sex_logits, temperature)
+    age = gumbel_softmax_sample(age_logits, temperature)
+    ethnicity = gumbel_softmax_sample(ethnicity_logits, temperature)
+    relgion = gumbel_softmax_sample(relgion_logits, temperature)
+    marital = gumbel_softmax_sample(marital_logits, temperature)
+    qual = gumbel_softmax_sample(qual_logits, temperature)
+    size = gumbel_softmax_sample(HH_size_logits, temperature)
+    type = gumbel_softmax_sample(HH_type_logits, temperature)
+    comp = gumbel_softmax_sample(HH_comp_logits, temperature)
 
-    return torch.cat([type, size, comp], dim=-1)
+    return torch.cat([sex, age, ethnicity, relgion, marital, qual, size, type, comp], dim=-1)
 
 def aggregate(encoded_tensor, cross_table, category_dicts):
     # Calculate split sizes based on category dictionaries
@@ -167,8 +227,6 @@ def plot(target, computed, cross_table, name):
     # Show plot
     # fig.show()
 
-
-
 def rmse_accuracy(target_tensor, computed_tensor):
     mse = torch.mean((target_tensor - computed_tensor) ** 2)
     rmse = torch.sqrt(mse)
@@ -176,12 +234,6 @@ def rmse_accuracy(target_tensor, computed_tensor):
     accuracy = 1 - (rmse / max_possible_error)
     return accuracy.item()
 
-# encoded_population = generate_population(input_tensor).cuda()
-# print(decode_tensor(encoded_population, [HH_type_dict, HH_size_dict, HH_comp_dict]))
-# records = decode_tensor(encoded_population, [sex_dict, age_dict, ethnic_dict, religion_dict, marital_dict, qual_dict])
-# categories_to_keep = ['sex', 'age', 'marital']  # Categories to keep
-# kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
-# aggregated_tensor = aggregate(kept_tensor, cross_table3, [sex_dict, age_dict, marital_dict])
 
 def rmse_accuracy(target_tensor, computed_tensor):
     mse = torch.mean((target_tensor - computed_tensor) ** 2)
@@ -192,13 +244,36 @@ def rmse_accuracy(target_tensor, computed_tensor):
 
 def rmse_loss(aggregated_tensor, target_tensor):
     return torch.sqrt(torch.mean((aggregated_tensor - target_tensor) ** 2))
+
+def rmse_loss(aggregated_tensor, target_tensor, mask):
+    # mask is a tensor of the same shape as target_tensor, where entries are 1 if the corresponding target_tensor entry is non-zero, and 0 otherwise
+    mse = torch.mean(((aggregated_tensor - target_tensor) ** 2) * mask)
+    rmse = torch.sqrt(mse)
+    return rmse
+
+# encoded_population = generate_population(input_tensor).cuda()
+# records = decode_tensor(encoded_population, [sex_dict, age_dict, ethnic_dict, religion_dict, marital_dict, qual_dict, HH_size_dict, HH_type_dict, HH_comp_dict])
+# print(records)
+# categories_to_keep = ['sex', 'age', 'marital']  # Categories to keep
+# kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
+# aggregated_tensor = aggregate(kept_tensor, cross_table3, [sex_dict, age_dict, marital_dict])
+# mask1 = (cross_table_tensor3 > 0).float().cuda()  # Assuming cross_table_tensor1 is on the GPU
+# loss1 = rmse_loss(aggregated_tensor, cross_table_tensor3.cuda(), mask1)
+
+
 # record execution start time
 
 start = time.time()
 # Training loop
-optimizer = torch.optim.Adam([{'params': type_net.parameters()},
-                              {'params': size_net.parameters()},
-                              {'params': comp_net.parameters()}], lr=0.001)
+optimizer = torch.optim.Adam([{'params': sex_net.parameters()},
+                              {'params': age_net.parameters()},
+                              {'params': ethnic_net.parameters()},
+                              {'params': relgion_net.parameters()},
+                              {'params': marital_net.parameters()},
+                              {'params': qual_net.parameters()},
+                              {'params': HH_size_net.parameters()},
+                              {'params': HH_type_net.parameters()},
+                              {'params': HH_comp_net.parameters()}], lr=0.001)
 
 number_of_epochs = 70
 for epoch in range(number_of_epochs):
@@ -222,19 +297,33 @@ for epoch in range(number_of_epochs):
     kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
     aggregated_population4 = aggregate(kept_tensor, cross_table4, [sex_dict, age_dict, qual_dict])
 
+    categories_to_keep = ['sex', 'age', 'HH_comp']
+    kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
+    aggregated_population5 = aggregate(kept_tensor, cross_table5, [sex_dict, age_dict, HH_comp_dict])
+
+    categories_to_keep = ['ethnicity', 'HH_comp']
+    kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
+    aggregated_population6 = aggregate(kept_tensor, cross_table6, [ethnic_dict, HH_comp_dict])
+
+    categories_to_keep = ['religion', 'HH_comp']
+    kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
+    aggregated_population7 = aggregate(kept_tensor, cross_table7, [religion_dict, HH_comp_dict])
 
     # Compute and backpropagate loss
     loss1 = rmse_loss(aggregated_population1, cross_table_tensor1.cuda())
     loss2 = rmse_loss(aggregated_population2, cross_table_tensor2.cuda())
     loss3 = rmse_loss(aggregated_population3, cross_table_tensor3.cuda())
     loss4 = rmse_loss(aggregated_population4, cross_table_tensor4.cuda())
+    loss5 = rmse_loss(aggregated_population5, cross_table_tensor5.cuda())
+    loss6 = rmse_loss(aggregated_population6, cross_table_tensor6.cuda())
+    loss7 = rmse_loss(aggregated_population7, cross_table_tensor7.cuda())
 
-    loss = loss1 + loss2 + loss3 + loss4
+    loss = loss1 + loss2 + loss3 + loss4 + loss5 + loss6 + loss7
 
     loss.backward()
     optimizer.step()
 
-    if epoch % 50 == 0:
+    if epoch % 10 == 0:
         print(f"Epoch {epoch}, Loss: {loss.item()}")
 
 plot(cross_table_tensor1, aggregated_population1, cross_table1, 'Age-Sex-Ethnicity')
