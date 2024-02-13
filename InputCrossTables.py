@@ -210,8 +210,8 @@ ethnicities = ['W0', 'M0', 'B0', 'A0', 'O0']
 ethnic_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'ethnic_by_sex_by_age.csv'))
 
 ethnic_by_religion = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'ethnic_by_religion.csv'))
-ethnic_by_religion = ethnic_by_religion.drop(columns=[col for col in ethnic_by_religion.columns[2:] if  col.split(' ')[0] not in ethnicities])
-ethnic_by_religion.columns = [col.replace('0', '') for col in ethnic_by_religion.columns]
+ethnic_by_religion = ethnic_by_religion.drop(columns=[col for col in ethnic_by_religion.columns[2:] if  col.split(' ')[0] in ethnicities])
+# ethnic_by_religion.columns = [col.replace('0', '') for col in ethnic_by_religion.columns]
 
 marital_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'marital_by_sex_by_age.csv'))
 # print(convert_marital_cross_table(getdictionary(marital_by_sex_by_age, 'E02005924')))
@@ -222,6 +222,8 @@ HH_composition_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA
 
 drop_cols = ['SP', 'OF', 'OH']
 HH_composition_by_Ethnicity = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'HH_composition_by_ethnicity.csv'))
-HH_composition_by_Ethnicity = HH_composition_by_Ethnicity.drop(columns=[col for col in HH_composition_by_Ethnicity.columns[2:] if  col.split(' ')[1] not in ethnicities])
-HH_composition_by_Ethnicity.columns = [col.replace('0', '') for col in HH_composition_by_Ethnicity.columns]
+HH_composition_by_Ethnicity = HH_composition_by_Ethnicity.drop(columns=[col for col in HH_composition_by_Ethnicity.columns[2:] if  col.split(' ')[1] in ethnicities])
+HH_composition_by_Ethnicity = HH_composition_by_Ethnicity.drop(columns=[col for col in HH_composition_by_Ethnicity.columns[2:] if  col.split(' ')[1] in ethnicities])
+HH_composition_by_Ethnicity = HH_composition_by_Ethnicity.drop(columns=[col for col in HH_composition_by_Ethnicity.columns[2:] if  col.split(' ')[0] in drop_cols])
+# HH_composition_by_Ethnicity.columns = [col.replace('0', '') for col in HH_composition_by_Ethnicity.columns]
 HH_composition_by_Religion = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'HH_composition_by_religion.csv'))

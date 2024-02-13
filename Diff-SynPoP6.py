@@ -61,6 +61,14 @@ cross_table_tensor2 = torch.tensor(list(cross_table2.values()), dtype=torch.floa
 cross_table_tensor3 = torch.tensor(list(cross_table3.values()), dtype=torch.float32).to(device)
 cross_table_tensor4 = torch.tensor(list(cross_table4.values()), dtype=torch.float32).to(device)
 
+# create a mask for the cross tables with non-zero entries
+mask1 = (cross_table_tensor1 > 0).float().to(device)
+mask2 = (cross_table_tensor2 > 0).float().to(device)
+mask3 = (cross_table_tensor3 > 0).float().to(device)
+mask4 = (cross_table_tensor4 > 0).float().to(device)
+
+
+
 # Instantiate networks for each characteristic
 input_dim = len(sex_dict.keys()) + len(age_dict.keys()) + len(ethnic_dict.keys()) + \
             len(religion_dict.keys()) + len(marital_dict.keys()) + len(qual_dict.keys())
@@ -192,8 +200,6 @@ def plot(target, computed, cross_table, name):
     # Show plot
     # fig.show()
 
-
-
 def rmse_accuracy(target_tensor, computed_tensor):
     mse = torch.mean((target_tensor - computed_tensor) ** 2)
     rmse = torch.sqrt(mse)
@@ -201,12 +207,6 @@ def rmse_accuracy(target_tensor, computed_tensor):
     accuracy = 1 - (rmse / max_possible_error)
     return accuracy.item()
 
-# encoded_population = generate_population(input_tensor).cuda()
-# records = decode_tensor(encoded_population, [sex_dict, age_dict, ethnic_dict, religion_dict, marital_dict, qual_dict])
-# print(records)
-# categories_to_keep = ['sex', 'age', 'marital']  # Categories to keep
-# kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
-# aggregated_tensor = aggregate(kept_tensor, cross_table3, [sex_dict, age_dict, marital_dict])
 
 def rmse_accuracy(target_tensor, computed_tensor):
     mse = torch.mean((target_tensor - computed_tensor) ** 2)
@@ -217,6 +217,20 @@ def rmse_accuracy(target_tensor, computed_tensor):
 
 def rmse_loss(aggregated_tensor, target_tensor):
     return torch.sqrt(torch.mean((aggregated_tensor - target_tensor) ** 2))
+
+def rmse_loss(aggregated_tensor, target_tensor, mask):
+    # mask is a tensor of the same shape as target_tensor, where entries are 1 if the corresponding target_tensor entry is non-zero, and 0 otherwise
+    mse = torch.mean(((aggregated_tensor - target_tensor) ** 2) * mask)
+    rmse = torch.sqrt(mse)
+    return rmse
+
+# encoded_population = generate_population(input_tensor).cuda()
+# records = decode_tensor(encoded_population, [sex_dict, age_dict, ethnic_dict, religion_dict, marital_dict, qual_dict])
+# categories_to_keep = ['sex', 'age', 'marital']  # Categories to keep
+# kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
+# aggregated_tensor = aggregate(kept_tensor, cross_table3, [sex_dict, age_dict, marital_dict])
+# mask1 = (cross_table_tensor3 > 0).float().cuda()  # Assuming cross_table_tensor1 is on the GPU
+# loss1 = rmse_loss(aggregated_tensor, cross_table_tensor3.cuda(), mask1)
 
 
 # record execution start time
@@ -254,10 +268,10 @@ for epoch in range(number_of_epochs):
 
 
     # Compute and backpropagate loss
-    loss1 = rmse_loss(aggregated_population1, cross_table_tensor1.cuda())
-    loss2 = rmse_loss(aggregated_population2, cross_table_tensor2.cuda())
-    loss3 = rmse_loss(aggregated_population3, cross_table_tensor3.cuda())
-    loss4 = rmse_loss(aggregated_population4, cross_table_tensor4.cuda())
+    loss1 = rmse_loss(aggregated_population1, cross_table_tensor1.cuda(), mask1)
+    loss2 = rmse_loss(aggregated_population2, cross_table_tensor2.cuda(), mask2)
+    loss3 = rmse_loss(aggregated_population3, cross_table_tensor3.cuda(), mask3)
+    loss4 = rmse_loss(aggregated_population4, cross_table_tensor4.cuda(), mask4)
 
     loss = loss1 + loss2 + loss3 + loss4
 

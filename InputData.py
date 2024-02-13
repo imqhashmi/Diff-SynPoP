@@ -99,8 +99,8 @@ sexdf = sexdf[sexdf['geography code'].isin(oxford_areas)]
 
 ethnicdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Ethnic.csv'))
 ethnicdf = ethnicdf[ethnicdf['geography code'].isin(oxford_areas)]
-ethnicdf = ethnicdf.drop(columns=[col for col in ethnicdf.columns[2:] if '0' not in col]) #remove all category columns
-ethnicdf.columns = [col.replace('0', '') for col in ethnicdf.columns]
+ethnicdf = ethnicdf.drop(columns=[col for col in ethnicdf.columns[2:] if '0' in col]) #remove all category columns
+# ethnicdf.columns = [col.replace('0', '') for col in ethnicdf.columns]
 
 
 religiondf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Religion.csv'))

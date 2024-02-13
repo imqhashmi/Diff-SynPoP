@@ -61,7 +61,7 @@ path = os.path.join(os.path.dirname(os.getcwd()))
 # sex_by_age_5yrs['85+ F'] = sex_by_age[['85F']].sum(axis=1)
 # sex_by_age_5yrs.to_csv(os.path.join(path, 'NOMIS', 'Census_2011_MSOA', 'crosstables', 'sex_by_age_5yrs.csv'), index=False)
 
-# ethnic_by_sex_by_age = pd.read_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'ethnic_by_sex_by_age.csv'))
+# ethnic_by_sex_by_age = pd.read_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'ethnic_by_sex_by_age_aggregated.csv'))
 # ethnic_by_sex_by_age = ethnic_by_sex_by_age.rename(columns = {'Sex: All persons; Age: All categories: Age; Ethnic Group: All categories: Ethnic group; measures: Value':'total'})
 # ethnic_by_sex_by_age = ethnic_by_sex_by_age.drop(columns=[col for col in ethnic_by_sex_by_age.columns if 'All' in col])
 # ethnic_by_sex_by_age = ethnic_by_sex_by_age.drop(columns=[col for col in ethnic_by_sex_by_age.columns if 'Total' in col])
@@ -94,7 +94,7 @@ path = os.path.join(os.path.dirname(os.getcwd()))
 #     updated_columns.append(genders + ' ' +  ages +  ' ' + ethnic)
 #
 # ethnic_by_sex_by_age.columns = updated_columns
-# ethnic_by_sex_by_age.to_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'ethnic_by_sex_by_age.csv'), index=False)
+# ethnic_by_sex_by_age.to_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'ethnic_by_sex_by_age_aggregated.csv'), index=False)
 
 # religion_by_sex_by_age = pd.read_csv(os.path.join(path, 'NOMIS', 'Census_2011_MSOA', 'crosstables', 'religion_by_sex_by_age.csv'))
 # religion_by_sex_by_age = religion_by_sex_by_age.rename(columns = {'Sex: All persons; Age: All categories: Age; Religion: All categories: Religion; measures: Value':'total'})
