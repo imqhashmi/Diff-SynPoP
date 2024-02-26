@@ -121,3 +121,13 @@ HHcomdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'HH_C
 
 HHtypedf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual','HH_type.csv'))
 
+# age5ydf = age5ydf[age5ydf['geography code']=='E02005927']
+# sexdf = sexdf[sexdf['geography code']=='E02005927']
+# ethnicdf = ethnicdf[ethnicdf['geography code']=='E02005927']
+# religiondf = religiondf[religiondf['geography code']=='E02005927']
+#
+# #save to csv
+# age5ydf.to_csv('age5ydf.csv', index=False)
+# sexdf.to_csv('sexdf.csv', index=False)
+# ethnicdf.to_csv('ethnicdf.csv', index=False)
+# religiondf.to_csv('religiondf.csv', index=False)

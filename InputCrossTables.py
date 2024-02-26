@@ -227,3 +227,15 @@ HH_composition_by_Ethnicity = HH_composition_by_Ethnicity.drop(columns=[col for 
 HH_composition_by_Ethnicity = HH_composition_by_Ethnicity.drop(columns=[col for col in HH_composition_by_Ethnicity.columns[2:] if  col.split(' ')[0] in drop_cols])
 # HH_composition_by_Ethnicity.columns = [col.replace('0', '') for col in HH_composition_by_Ethnicity.columns]
 HH_composition_by_Religion = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'HH_composition_by_religion.csv'))
+
+
+# sex_by_age = sex_by_age[sex_by_age['geography code'] == 'E02005927']
+# ethnic_by_religion = ethnic_by_religion[ethnic_by_religion['geography code'] == 'E02005927']
+# ethnic_by_sex_by_age = ethnic_by_sex_by_age[ethnic_by_sex_by_age['geography code'] == 'E02005927']
+# religion_by_sex_by_age = religion_by_sex_by_age[religion_by_sex_by_age['geography code'] == 'E02005927']
+#
+# # save to csv
+# sex_by_age.to_csv('sex_by_age.csv', index=False)
+# ethnic_by_religion.to_csv('ethnic_by_religion.csv', index=False)
+# ethnic_by_sex_by_age.to_csv('ethnic_by_sex_by_age.csv', index=False)
+# religion_by_sex_by_age.to_csv('religion_by_sex_by_age.csv', index=False)
