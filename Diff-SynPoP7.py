@@ -434,19 +434,19 @@ for _, person_row in persons_df.iterrows():
         
         # only assigning a single person to compositions "SP Elder" & "SP Adult"
         if (household['Composition'] in ['SP Elder', 'SP Adult']) and (len(household['Assigned_Persons']) > 0):
-            continue  # skipping this household
+            continue
         
         # only assigning elders to compositions "SP Elder" & "SP Adult"
         if (household['Composition'] in ['SP Elder', 'OF Elder']) and (person_row['age'] not in elder_ages):
-            continue  # skipping this household
+            continue
         
         # only assigning adults or elders to compositions having no children
         if (household['Composition'] in ["OF Married NC", "OF Cohab NC"]) and (person_row['age'] in child_ages):
-            continue  # Skip this household, choose another one
-        
+            continue
+
         # only assigning a single person to household compositions "SP Elder" & "SP Adult"
         if (household['Composition'] not in ["OF Married DC", "OF Cohab DC", "LP DC"]) and (person_row['age'] in child_ages):
-            continue  # Skip this household, choose another one
+            continue
          
         else:
             households_df.at[household_id, 'Assigned_Persons'].append(person_row['Person_ID'])
@@ -474,5 +474,4 @@ def assign_persons_to_households(persons_df, households_df):
             households_df.at[selected_household_index, 'Assigned_Persons'].append(person['Person_ID'])
             assigned = True
 
-# performing the assignment
 assign_persons_to_households(persons_df, households_df)
