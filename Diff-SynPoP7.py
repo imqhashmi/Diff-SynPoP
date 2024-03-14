@@ -344,8 +344,9 @@ plt.show()
 
 records = decode_tensor(encoded_population, [sex_dict, age_dict, ethnic_dict, religion_dict, marital_dict, qual_dict])
 df = pd.DataFrame(records, columns=['sex', 'age', 'ethnicity', 'religion', 'marital', 'qualification'])
-#age_categories_to_single = ["0_4", "5_7", "8_9", "10_14", "15"]
-#df.loc[df['age'].isin(age_categories_to_single), 'marital'] = 'Single'
+age_categories_to_single = ["0_4", "5_7", "8_9", "10_14", "15"]
+df.loc[df['age'].isin(age_categories_to_single), 'marital'] = 'Single'
+df.loc[df['age'].isin(age_categories_to_single), 'qualification'] = 'no'
 df.to_csv('synthetic_population.csv', index=False)
 
 # recording execution end time
@@ -428,8 +429,8 @@ print(household_size_dist_nc)
 # individuals are in persons_df
 # households are in households_df
 
-child_ages = ["0_4", "5_7", "8_9", "10_14", "15", "16_17"]
-adult_ages = ["18_19", "20_24", "25_29", "30_34", "35_39", "40_44", "45_49", "50_54", "55_59", "60_64"]
+child_ages = ["0_4", "5_7", "8_9", "10_14", "15"]
+adult_ages = ["16_17", "18_19", "20_24", "25_29", "30_34", "35_39", "40_44", "45_49", "50_54", "55_59", "60_64"]
 elder_ages = ["65_69", "70_74", "75_79", "80_84", "85+"]
 
 inter_ethnic_ratio = 0.1
