@@ -1,3 +1,5 @@
+# IMPORTING LIBRARIES
+
 import sys
 
 # appending the system path to run the file on kaggle
@@ -25,6 +27,8 @@ from torch.nn import init
 from torch.optim.lr_scheduler import StepLR
 from torch.optim.lr_scheduler import ExponentialLR
 
+# FEED FORWARD NEURAL NETWORK
+
 class FFNetwork(nn.Module):
     def __init__(self, input_dim, hidden_dims, output_dim):
         super(FFNetwork, self).__init__()
@@ -40,7 +44,8 @@ class FFNetwork(nn.Module):
     def forward(self, x):
         x = self.layers(x)
         return self.output_layer(x)
-    
+
+# DICTIONARIES, CROSS TABLES, & INPUT TENSOR (INDIVIDUALS)**
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu' # checking to see if a cuda device is available 
 path = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP')
@@ -105,6 +110,8 @@ qual_net = FFNetwork(input_dim, hidden_dims, len(qual_dict)).to(device).cuda()
 
 input_tensor = torch.empty(total, input_dim).to(device)
 init.kaiming_normal_(input_tensor)
+
+# ACCESSORY FUNCTIONS (INDIVIDUAL GENERATION)
 
 # defining the Gumbel-Softmax function
 def gumbel_softmax_sample(logits, temperature=0.5):
@@ -272,6 +279,8 @@ records = decode_tensor(generated_population, [sex_dict, age_dict, ethnic_dict, 
 df = pd.DataFrame(records, columns=['sex', 'age', 'ethnicity', 'religion', 'marital', 'qualification'])
 print(df)
 
+# TRAINING / PLOTTING (INDIVIDUAL GENERATION)
+
 loss_history = []
 accuracy_history = []
 
@@ -396,6 +405,63 @@ hours = int(duration // 3600)
 minutes = int((duration % 3600) // 60)
 seconds = duration % 60
 print(f"Duration: {hours} hours, {minutes} minutes, {seconds:.2f} seconds")
+
+# RADAR CHARTS FOR INDIVIDUAL ATTRIBUTES
+
+import plotly.graph_objects as go
+
+def plot_radar(attribute, attribute_dict, show):
+    
+    categories_gen = persons_df[attribute].unique().astype(str).tolist()    
+    count_gen = [(persons_df[attribute] == str).sum() for str in categories_gen]
+    categories, count_act = list(attribute_dict.keys()), list(attribute_dict.values())
+
+    gen_combined = list(zip(categories_gen, count_gen))
+    gen_combined = sorted(gen_combined, key=lambda x: categories.index(x[0]))
+    categories_gen, count_gen = zip(*gen_combined)
+    count_gen = list(count_gen)   
+    range = (0, ((max(count_act) + max(count_gen)) / 2) * 1.1)
+    
+    categories.append(categories[0])
+    count_act.append(count_act[0])
+    count_gen.append(count_gen[0])
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatterpolar(
+        r = count_gen,
+        theta=categories,
+        name='Generated Population',
+        line=dict(width=3)
+    ))
+    fig.add_trace(go.Scatterpolar(
+        r = count_act,
+        theta=categories,
+        name='Actual Population',
+        line=dict(width=3)
+    ))
+
+    fig.update_layout(
+      polar=dict(
+        radialaxis=dict(
+          visible=True,
+          range=range
+        )),
+      showlegend=True,
+      width=2000,
+      height=2000
+    )
+    
+    fig.write_html(f"{attribute}-radar-chart.html")
+    fig.show() if show == 'yes' else None
+
+plot_radar('age', age_dict, show='no')
+plot_radar('religion', religion_dict, show='no')
+plot_radar('ethnicity', ethnic_dict, show='no')
+plot_radar('marital', marital_dict, show='no')
+plot_radar('qualification', qual_dict, show='no')
+
+# DICTIONARIES, CROSS TABLES, & INPUT TENSOR (HOUSEHOLDS)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu' # checking to see if a cuda device is available
 
