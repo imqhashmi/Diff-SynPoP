@@ -1230,3 +1230,188 @@ print(f"Unassigned Households Percentage: {uap}")
 
 households_df = households_df.sample(frac=1, random_state=42).reset_index(drop=True)
 households_df.to_csv('households.csv', index=False)
+
+# RADAR CHARTS FOR HOUSEHOLDS
+
+households_df_plot = households_df.copy(deep=True)
+households_df_plot.loc[(households_df_plot['composition'].str.contains('1P')), 'composition'] = '1P'
+households_df_plot.loc[(households_df_plot['composition'].str.contains('1H')), 'composition'] = '1H'
+households_df_plot.loc[(households_df_plot['composition'].str.contains('1F')), 'composition'] = '1F'
+
+comp_list = households_df_plot['composition'].unique().astype(str).tolist()
+ethnic_dict = ID.getdictionary(ID.ethnicdf, area)
+ethnic_list = [str(k) for k in ethnic_dict.keys()]
+combinations = pd.DataFrame(list(itertools.product(comp_list, ethnic_list)), columns=['composition', 'ref_ethnicity'])
+counts_df = households_df_plot.groupby(['composition', 'ref_ethnicity']).size().reset_index(name='counts')
+comp_ethnic_df_gen = combinations.merge(counts_df, on=['composition', 'ref_ethnicity'], how='left').fillna(0)
+comp_ethnic_df_gen['category'] = comp_ethnic_df_gen.apply(lambda row: '{} {}'.format(row['composition'], row['ref_ethnicity']), axis=1)
+comp_ethnic_df_gen.drop(['composition', 'ref_ethnicity'], axis=1, inplace=True)
+comp_ethnic_df_gen['counts'] = comp_ethnic_df_gen['counts'].astype(int)
+
+comp_list = households_df_plot['composition'].unique().astype(str).tolist()
+religion_dict = ID.getdictionary(ID.religiondf, area)
+rel_list = [str(k) for k in religion_dict.keys()]
+combinations = pd.DataFrame(list(itertools.product(comp_list, rel_list)), columns=['composition', 'ref_religion'])
+counts_df = households_df_plot.groupby(['composition', 'ref_religion']).size().reset_index(name='counts')
+comp_rel_df_gen = combinations.merge(counts_df, on=['composition', 'ref_religion'], how='left').fillna(0)
+comp_rel_df_gen['category'] = comp_rel_df_gen.apply(lambda row: '{} {}'.format(row['composition'], row['ref_religion']), axis=1)
+comp_rel_df_gen.drop(['composition', 'ref_religion'], axis=1, inplace=True)
+comp_rel_df_gen['counts'] = comp_rel_df_gen['counts'].astype(int)
+
+cats = ["1P", "1F", "1H"]
+cross_table1_hh = ICT.getdictionary(ICT.HH_composition_by_Ethnicity, area)
+cross_table2_hh = ICT.getdictionary(ICT.HH_composition_by_Religion, area)
+
+new_dict = {}
+for key, value in cross_table1_hh.items():
+    for cat in cats:
+        if key.startswith(cat):
+            key_mod = f"{cat} " + key.split(" ")[1]
+            if key_mod in new_dict:
+                new_dict[key_mod] += value
+            else:
+                new_dict[key_mod] = value 
+comp_ethnic_df_act = pd.DataFrame({'category': new_dict.keys(), 'counts': new_dict.values()})
+
+new_dict = {}
+for key, value in cross_table2_hh.items():
+    for cat in cats:
+        if key.startswith(cat):
+            key_mod = f"{cat} " + key.split(" ")[1]
+            if key_mod in new_dict:
+                new_dict[key_mod] += value
+            else:
+                new_dict[key_mod] = value    
+comp_rel_df_act = pd.DataFrame({'category': new_dict.keys(), 'counts': new_dict.values()})
+
+import plotly.graph_objects as go
+
+def plot_radar_hh(attribute, act_df, gen_df, show):
+    
+    categories_gen = gen_df["category"].astype(str).tolist()
+    count_gen = gen_df["counts"].tolist()
+    categories = act_df["category"].astype(str).tolist()
+    count_act = act_df["counts"].tolist()
+
+    gen_combined = list(zip(categories_gen, count_gen))
+    gen_combined = sorted(gen_combined, key=lambda x: categories.index(x[0]))
+    categories_gen, count_gen = zip(*gen_combined)
+    count_gen = list(count_gen)   
+    range = (0, ((max(count_act) + max(count_gen)) / 2) * 1.1)
+    
+    categories.append(categories[0])
+    count_act.append(count_act[0])
+    count_gen.append(count_gen[0])
+
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scatterpolar(
+        r = count_act,
+        theta=categories,
+        name='Actual Population',
+        line=dict(width=3)
+    ))
+    
+    fig.add_trace(go.Scatterpolar(
+        r = count_gen,
+        theta=categories,
+        name='Generated Population',
+        line=dict(width=3)
+    ))
+
+    fig.update_layout(
+      polar=dict(
+        radialaxis=dict(
+          visible=True,
+          range=range
+        )),
+      showlegend=True,
+      width=1000,
+      height=1000
+    )
+    
+    fig.write_html(f"comp-{attribute}-radar-chart.html")
+    fig.show() if show == 'yes' else None
+
+# note: set show to 'yes' for displaying the plot
+plot_radar_hh('ethnicity', comp_ethnic_df_act, comp_ethnic_df_gen, show='no')
+plot_radar_hh('religion', comp_rel_df_act, comp_rel_df_gen, show='no')
+
+# GRAPH VISUALIZATION
+
+import pandas as pd
+import networkx as nx
+import plotly.graph_objects as go
+
+file_path_persons_csv = '/kaggle/working/synthetic_population.csv'
+file_path_households_csv = '/kaggle/working/households.csv'
+persons_df = pd.read_csv(file_path_persons_csv)
+households_df = pd.read_csv(file_path_households_csv)
+
+def extract_numbers_as_integers(string_with_numbers):
+    numbers_list = ast.literal_eval(string_with_numbers)
+    return numbers_list
+
+def plot_assignments_network(persons_df, households_df, show='yes'):
+
+    households_df['assigned_persons'] = households_df['assigned_persons'].apply(extract_numbers_as_integers)
+    households_df = households_df.head(100)
+
+    G = nx.Graph()
+
+    for idx, row in households_df.iterrows():
+        G.add_node(row['household_ID'],
+                   composition=row['composition'],
+                   size=len(row['assigned_persons']),
+                   ref_ethnicity=row['ref_ethnicity'],               
+                   ref_religion=row['ref_religion'],
+                   persons=row['assigned_persons'],
+                   node_type='household')
+
+    assigned_persons = set()
+    for idx, row in households_df.iterrows():
+        household_persons = row['assigned_persons']
+        for person_id in household_persons:
+            G.add_node(person_id,
+                       sex = persons_df[persons_df['Person_ID'] == person_id]['sex'].values[0],
+                       age = persons_df[persons_df['Person_ID'] == person_id]['age'].values[0],
+                       ethnicity = persons_df[persons_df['Person_ID'] == person_id]['ethnicity'].values[0],
+                       religion = persons_df[persons_df['Person_ID'] == person_id]['religion'].values[0],
+                       marital = persons_df[persons_df['Person_ID'] == person_id]['marital'].values[0],
+                       qualification = persons_df[persons_df['Person_ID'] == person_id]['qualification'].values[0],
+                       node_type='person')
+            G.add_edge(row['household_ID'], person_id)
+            assigned_persons.add(person_id)
+
+    pos = nx.nx_pydot.pydot_layout(G, prog='fdp')
+    fig = go.Figure()
+
+    for node in G.nodes(data=True):
+        if node[1]['node_type'] == 'household':
+            fig.add_trace(go.Scatter(x=[pos[node[0]][0]], y=[pos[node[0]][1]], mode='markers',
+                                     marker=dict(symbol='square', size=12, color='mediumvioletred'),
+                                     text=f"Household ID: {node[0]}<br>Composition: {node[1]['composition']}<br>Size: {node[1]['size']}<br>Reference Ethnicity: {node[1]['ref_ethnicity']}<br>Reference Religion: {node[1]['ref_religion']}<br>Assigned Persons: {', '.join(map(str, node[1]['persons']))}",
+                                     hoverinfo='text'))
+
+    for node in G.nodes(data=True):
+        if node[1]['node_type'] == 'person' and node[0] in assigned_persons:
+            fig.add_trace(go.Scatter(x=[pos[node[0]][0]], y=[pos[node[0]][1]], mode='markers',
+                                     marker=dict(symbol='circle', size=7, color='dodgerblue'),
+                                     text=f"Person ID: {node[0]}<br>Sex: {node[1]['sex']}<br>Age: {node[1]['age']}<br>Ethnicity: {node[1]['ethnicity']}<br>Religion: {node[1]['religion']}<br>Marital Status: {node[1]['marital']}<br>Qualification: {node[1]['qualification']}",
+                                     hoverinfo='text'))
+
+    for edge in G.edges():
+        fig.add_trace(go.Scatter(x=[pos[edge[0]][0], pos[edge[1]][0]], y=[pos[edge[0]][1], pos[edge[1]][1]], mode='lines',
+                                 line=dict(color='black', width=1), hoverinfo='none'))
+
+    fig.update_layout(title='Households and Persons Graph',
+                      showlegend=False,
+                      hovermode='closest',
+                      width=1000,
+                      height=1000)
+
+    fig.write_html(f"assignments_network.html")
+    fig.show() if show == 'yes' else None
+
+# note: set show to 'yes' for displaying the plot
+plot_assignments_network(persons_df, households_df, show='no')
