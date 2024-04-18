@@ -585,13 +585,13 @@ start = time.time()
 
 # training loop
 optimizer = torch.optim.Adam([{'params': ethnic_net_hh.parameters()},
-                              {'params': religion_net_hh.parameters()}], lr=0.05)
+                              {'params': religion_net_hh.parameters()}], lr=0.001)
 scheduler = StepLR(optimizer, step_size=20, gamma=0.25)
 
 ethnic_net_hh.apply(weights_init)
 religion_net_hh.apply(weights_init)
 
-number_of_epochs = 300
+number_of_epochs = 1000
 for epoch in range(number_of_epochs+1):
     optimizer.zero_grad()
 
