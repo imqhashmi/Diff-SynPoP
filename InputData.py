@@ -9,18 +9,20 @@ import plotly as py
 import math
 
 def getdictionary(df, area):
-    #filter df by area
     df = df[df['geography code'] == area]
-    if 'total' in df.columns:
-        df = df.iloc[:, 1:] #drop total column
-    dic = {}
-    for index, row in df.iterrows():
-        for index, column in enumerate(df.columns):
-            if index==0:
-                continue
-            dic[column] = int(row[column])
-    # return dict(sorted(dic.items()))
+    dic = df.iloc[0].to_dict()
+    dic.pop('geography code')
+    dic.pop('total')
     return dic
+
+def getweights(df, area):
+    df = df[df['geography code'] == area]
+    dic = df.iloc[0].to_dict()
+    dic.pop('geography code')
+    total = dic.pop('total')
+    weights = [x / total for x in dic.values()]
+    weights = {key: value/total for key, value in dic.items()}
+    return weights
 
 def getHHcomdictionary(df, area):
     #filter df by area
@@ -35,33 +37,11 @@ def getHHcomdictionary(df, area):
     # return dict(sorted(dic.items()))
     return dic
 
-def get_weighted_sample(df):
-    groups = list(df.columns)[2:] #drop first two columns: areacode and total
-    values = df.values.flatten().tolist()[1:]
-    total = values.pop(0)
-    weights = [x / total for x in values]
-    # print(sum(weights))
-    # get random values based on prob. distribution
-    # result = [str(i) for i in list()]
-    return np.random.choice(groups, size=1, replace=True, p=weights).tolist()[0]
-
-def get_category_weights(df, area):
-    #filter df by area
-    df = df[df['geography code'] == area]
-    groups = [col.strip() for col in list(df.columns)][2:] #drop first two columns: areacode and total
-    values = df.values.flatten().tolist()[1:]
-    total = values.pop(0)
-    # divide each value by total to get probability
-    weights = [x / total for x in values]
-    return weights
 
 def get_total(df, area):
-    #filter df by area
     df = df[df['geography code'] == area]
-    groups = [col.strip() for col in list(df.columns)][2:] #drop first two columns: areacode and total
-    values = df.values.flatten().tolist()[1:]
-    total = values.pop(0)
-    return total
+    dic = df.iloc[0].to_dict()
+    return dic['total']
 
 def get_HH_com_total(df, area):
     #filter df by area
@@ -106,7 +86,7 @@ def aggregate_age_groups(age_distribution):
             aggregated_counts[category] += age_distribution.get(age_range, 0)
     return aggregated_counts
 
-path = os.path.join(os.path.dirname(os.getcwd()), 'input/diffspop/Diff-SynPoP')
+path = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP')
 
 oxford_areas = ['E02005921', 'E02005922', 'E02005923', 'E02005924', 'E02005925', 'E02005926', 'E02005927', 'E02005928', 'E02005929', 'E02005930', 'E02005931', 'E02005932', 'E02005933', 'E02005934', 'E02005935', 'E02005936', 'E02005937', 'E02005938', 'E02005939', 'E02005940', 'E02005941', 'E02005942', 'E02005943', 'E02005944', 'E02005945', 'E02005946', 'E02005947', 'E02005948', 'E02005949', 'E02005950', 'E02005951', 'E02005952', 'E02005953', 'E02005954', 'E02005955', 'E02005956', 'E02005957', 'E02005958', 'E02005959', 'E02005960', 'E02005961', 'E02005962', 'E02005963', 'E02005964', 'E02005965', 'E02005966', 'E02005967', 'E02005968', 'E02005969', 'E02005970', 'E02005971', 'E02005972', 'E02005973', 'E02005974', 'E02005975', 'E02005976', 'E02005977', 'E02005978', 'E02005979', 'E02005980', 'E02005981', 'E02005982', 'E02005983', 'E02005984', 'E02005985', 'E02005986', 'E02005987', 'E02005988', 'E02005991', 'E02005992', 'E02006886', 'E02005993', 'E02005994', 'E02005995', 'E02005996', 'E02005997', 'E02005998', 'E02005999', 'E02006000', 'E02006001', 'E02006002', 'E02006003', 'E02006004', 'E02006005', 'E02006006', 'E02006007']
 # Read census data
@@ -134,12 +114,69 @@ qualdf = qualdf[qualdf['geography code'].isin(oxford_areas)]
 HHsizedf = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'individual', 'HH_size.csv'))
 HHsizedf = HHsizedf.rename(columns={'8+': '8'})
 
+HHtypedf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual','HH_type.csv'))
+
 # processing household composition distribution
 HHcomdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'HH_Compositions.csv'))
-HHcomdf['1FM-2C'] = HHcomdf['1FM-1C'] + HHcomdf['1FM-nC']
-HHcomdf['1FC-2C'] = HHcomdf['1FC-1C'] + HHcomdf['1FC-nC']
-HHcomdf['1FL-2C'] = HHcomdf['1FL-1C'] + HHcomdf['1FL-nC']
-HHcomdf['1H-2C'] = HHcomdf['1H-1C'] + HHcomdf['1H-nC']
-HHcomdf.drop(columns=['1FM-1C', '1FM-nC', '1FC-1C', '1FC-nC', '1FL-1C', '1FL-nC', '1H-1C', '1H-nC'], inplace=True)
-
-HHtypedf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual','HH_type.csv'))
+HHcomdf = HHcomdf.drop(columns=['Household Composition: One person household: Total; measures: Value',
+'Household Composition: One family only: Total; measures: Value',
+'Household Composition: One family only: Married couple: Total; measures: Value',
+'Household Composition: One family only: Same-sex civil partnership couple: Total; measures: Value',
+'Household Composition: One family only: Cohabiting couple: Total; measures: Value',
+'Household Composition: One family only: Lone parent: Total; measures: Value',
+'Household Composition: Other household types: Total; measures: Value'])
+columns = list(HHcomdf.columns)[2:]
+updated_columns = ['geography code', 'total']
+for column in columns:
+    column = column.replace("Household Composition: One person household: Aged 65 and over; measures: Value", "1PE")
+    column = column.replace("Household Composition: One person household: Other; measures: Value", "1PA")
+    column = column.replace("Household Composition: One family only: All aged 65 and over; measures: Value", "1FE")
+    column = column.replace("Household Composition: One family only: Married couple: No children; measures: Value",
+                            "1FM-0C")
+    column = column.replace(
+        "Household Composition: One family only: Married couple: One dependent child; measures: Value", "1FM-1C")
+    column = column.replace(
+        "Household Composition: One family only: Married couple: Two or more dependent children; measures: Value",
+        "1FM-nC")
+    column = column.replace(
+        "Household Composition: One family only: Married couple: All children non-dependent; measures: Value", "1FM-nA")
+    column = column.replace(
+        "Household Composition: One family only: Same-sex civil partnership couple: No children; measures: Value",
+        "1FS-0C")
+    column = column.replace(
+        "Household Composition: One family only: Same-sex civil partnership couple: One dependent child; measures: Value",
+        "1FS-1C")
+    column = column.replace(
+        "Household Composition: One family only: Same-sex civil partnership couple: Two or more dependent children; measures: Value",
+        "1FS-nC")
+    column = column.replace(
+        "Household Composition: One family only: Same-sex civil partnership couple: All children non-dependent; measures: Value",
+        "1FS-nA")
+    column = column.replace("Household Composition: One family only: Cohabiting couple: No children; measures: Value",
+                            "1FC-0C")
+    column = column.replace(
+        "Household Composition: One family only: Cohabiting couple: One dependent child; measures: Value", "1FC-1C")
+    column = column.replace(
+        "Household Composition: One family only: Cohabiting couple: Two or more dependent children; measures: Value",
+        "1FC-nC")
+    column = column.replace(
+        "Household Composition: One family only: Cohabiting couple: All children non-dependent; measures: Value",
+        "1FC-nA")
+    column = column.replace("Household Composition: One family only: Lone parent: One dependent child; measures: Value",
+                            "1FL-1C")
+    column = column.replace(
+        "Household Composition: One family only: Lone parent: Two or more dependent children; measures: Value",
+        "1FL-nC")
+    column = column.replace(
+        "Household Composition: One family only: Lone parent: All children non-dependent; measures: Value", "1FL-nA")
+    column = column.replace("Household Composition: Other household types: With one dependent child; measures: Value",
+                            "1H-1C")
+    column = column.replace(
+        "Household Composition: Other household types: With two or more dependent children; measures: Value", "1H-nC")
+    column = column.replace("Household Composition: Other household types: All full-time students; measures: Value",
+                            "1H-nA")
+    column = column.replace("Household Composition: Other household types: All aged 65 and over; measures: Value",
+                            "1H-nE")
+    column = column.replace("Household Composition: Other household types: Other; measures: Value", "1H-nA")
+    updated_columns.append(column)
+HHcomdf.columns = updated_columns

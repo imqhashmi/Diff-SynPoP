@@ -34,9 +34,9 @@ print('Household composition: ', HH_composition)
 print('Cross Tables: ')
 
 sex_by_age = ICT.getdictionary(ICT.sex_by_age, area)
-child_ages = ['0-4', '5-7', '8-9', '10-14', '15', '16-17', '18-19']
-adult_ages = ['20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64']
-elder_ages = ['65-69', '70-74', '75-79', '80-84', '85+']
+child_ages = ['0_4', '5_7', '8_9', '10_14', '15', '16_17', '18_19']
+adult_ages = ['20_24', '25_29', '30_34', '35_39', '40_44', '45_49', '50_54', '55_59', '60_64']
+elder_ages = ['65_69', '70_74', '75_79', '80_84', '85+']
 aggregate = {}
 for key in sex_by_age.keys():
     aggregate[key.split(' ')[0] + ' child '] = 0

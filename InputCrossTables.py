@@ -8,6 +8,7 @@ import plotly as py
 import math
 from collections import Counter
 import itertools
+import InputData as ID
 
 def getkeys(df):
     groups = list(df.columns)[2:] #drop first two columns: areacode and total
@@ -36,16 +37,22 @@ def get_weight(key, df):
     total = df.values.flatten().tolist()[1:].pop(0)
     return value/total
 
+# def getdictionary(df, area):
+#     df = df[df['geography code'] == area]
+#     if 'total' in df.columns:
+#         df = df.iloc[:, 1:] #drop total column
+#     dic = {}
+#     for index, row in df.iterrows():
+#         for index, column in enumerate(df.columns):
+#             if index==0:
+#                 continue
+#             dic[column] = int(row[column])
+#     return dic
 def getdictionary(df, area):
     df = df[df['geography code'] == area]
-    if 'total' in df.columns:
-        df = df.iloc[:, 1:] #drop total column
-    dic = {}
-    for index, row in df.iterrows():
-        for index, column in enumerate(df.columns):
-            if index==0:
-                continue
-            dic[column] = int(row[column])
+    dic = df.iloc[0].to_dict()
+    dic.pop('geography code')
+    dic.pop('total')
     return dic
 
 def aggregate_age(data):
@@ -76,17 +83,6 @@ def plot_crosstable(data, title):
     fig = px.bar(x=list(data.keys()), y=list(data.values()), labels={'x': title, 'y': 'Count'})
     fig.update_layout(title=title, xaxis_tickangle=-45)
     return fig
-
-
-def plot(actual, predicted, rmse):
-    fig = go.Figure()
-    fig.add_trace(
-        go.Scatter(x0='data', name='actual', y=actual, line_color='#636EFA'))
-    fig.add_trace(
-        go.Scatter(x0='data', name='pred', y=predicted, line_color='#EF553B', opacity=0.6))
-    fig.update_layout(width=1000, title='RMSE=' + str(rmse), showlegend=False)
-    py.offline.plot(fig, filename="temp.html")
-    fig.show()
 
 def generate_combinations(left, right, total):
     # generate all possible combinations
@@ -235,8 +231,51 @@ def convert_household_cross_table(old_cross_table):
 
     return new_cross_table
 
-path = os.path.join(os.path.dirname(os.getcwd()), 'input/diffspop/Diff-SynPoP')
+def assign_size(composition, hh_size_weights):
+    household_sizes = {
+        '1PE': '1', '1PA': '1', '1FE': '1',
+        '1FM-0C': '2', '1FM-1C': '3', '1FM-nC': '4+', '1FM-nA': '3+',
+        '1FS-0C': '2', '1FS-1C': '3', '1FS-nC': '4+', '1FS-nA': '3+',
+        '1FC-0C': '2', '1FC-1C': '3', '1FC-nC': '4+', '1FC-nA': '3+',
+        '1FL-1C': '2', '1FL-nC': '2+', '1FL-nA': '2+',
+        '1H-1C': '3+', '1H-nC': '3+', '1H-nA': '3+', '1H-nE': '3+'
+    }
+    expected_size = household_sizes[composition]
+    # if expected size has +
+    if '+' in expected_size:
+        expected_size = int(expected_size.replace('+', ''))
+        # get random choice from the expected size till 8
+        expected_sizes = list(range(expected_size, 9))
+        return random.choices(expected_sizes, weights=[hh_size_weights[str(size)] for size in expected_sizes])[0]
 
+    else:
+        return int(expected_size)
+def get_hh_comp_by_size_crosstable(area):
+    hh_comp_dict = ID.getdictionary(ID.HHcomdf, area)  # household composition
+    hh_size_dict = ID.getdictionary(ID.HHsizedf, area)  # household size
+    hh_total = ID.get_total(ID.HHcomdf, area)
+
+    # create a blank hh_df and assign household composition to each household
+    hh_df = pd.DataFrame(columns=['household_ID', 'composition'])
+    hh_df['household_ID'] = range(1, hh_total + 1)
+    id = 1
+    for key, value in hh_comp_dict.items():
+        for i in range(value):
+            hh_df.loc[hh_df['household_ID'] == id, 'composition'] = key
+            id += 1
+    # assign 1PA to nan values
+    hh_df['composition'] = hh_df['composition'].fillna('1PA')
+    # calculate weights for each household size
+    hh_size_weights = {key: value / sum(hh_size_dict.values()) for key, value in hh_size_dict.items()}
+    hh_df['size'] = hh_df['composition'].apply(lambda x: int(assign_size(x, hh_size_weights)))
+    # create a cross table of household composition and household size using hh_df
+    hh_comp_by_size_dict = hh_df.groupby(['composition', 'size']).size().to_dict()
+    #replace tuple keys with string keys
+    hh_comp_by_size_dict = {f'{key[0]} {key[1]}': value for key, value in hh_comp_by_size_dict.items()}
+    return hh_comp_by_size_dict
+
+
+path = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP')
 sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'sex_by_age_5yrs.csv'))
 cols = [(col.split(' ')[1] + ' ' + col.split(' ')[0]) for col in sex_by_age.columns[2:]]
 sex_by_age.columns = ['geography code', 'total'] + cols
@@ -268,72 +307,152 @@ marital_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'cro
 qualification_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'qualification_by_sex_by_age.csv'))
 # print(convert_qualification_cross_table(getdictionary(qualification_by_sex_by_age, 'E02005924')))
 
-# new terms for household compositions
-substring_mapping = {
-    'SP-Elder': '1PE',
-    'SP-Adult': '1PA',
-    'OF-Elder': '1FE',
-    'OF-Married-0C': '1FM-0C',
-    'OF-Married-2C': '1FM-2C',
-    'OF-Married-ND': '1FM-nA',
-    'OF-Cohabiting-0C': '1FC-0C',
-    'OF-Cohabiting-2C': '1FC-2C',
-    'OF-Cohabiting-ND': '1FC-nA',
-    'OF-Lone-2C': '1FL-2C',
-    'OF-Lone-ND': '1FL-nA',
-    'OH-2C': '1H-2C',
-    'OH-Student': '1H-nS',
-    'OH-Elder': '1H-nE',
-    'OH-Adult': '1H-nA',
-}
-# removing aggregated columns
-substrings_to_exclude = ['OF-Married', 'OF-Cohabiting', 'OF-LoneParent']
-# removing 0 in front of aggregated ethnicities
-ethnicity_terms_mapping = {
-    'W0': 'W',
-    'M0': 'M',
-    'A0': 'A',
-    'B0': 'B',
-    'O0': 'O'
-}
+HH_composition_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'HH_composition_by_sex_by_age.csv'))
+HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.rename(columns = {'Household Composition: All categories: Household composition; Religion: All categories: Religion of HRP':'total'})
+HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if 'All persons' in col])
+HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if 'All categories:' in col])
+HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if 'Total' in col])
+
+updated_columns = ['geography code', 'total']
+for column in HH_composition_by_sex_by_age.columns[2:]:
+    composition = column.split(";")[2].strip()
+    composition = composition.replace("Household Composition: One person household: Aged 65 and over", "1PE")
+    composition = composition.replace("Household Composition: One person household: Other", "1PA")
+    composition = composition.replace("Household Composition: One family only: All aged 65 and over", "1FE")
+    composition = composition.replace("Household Composition: One family only: Married or same-sex civil partnership couple: No children", "1FM-0C")
+    composition = composition.replace("Household Composition: One family only: Married or same-sex civil partnership couple: Dependent children","1FM-nC")
+    composition = composition.replace("Household Composition: One family only: Married or same-sex civil partnership couple: All children non-dependent", "1FM-nA")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: No children","1FC-0C")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: Dependent children","1FC-nC")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: All children non-dependent","1FC-nA")
+    composition = composition.replace("Household Composition: One family only: Lone parent: One dependent child","1FL-1C")
+    composition = composition.replace("Household Composition: One family only: Lone parent: Dependent children","1FL-nC")
+    composition = composition.replace("Household Composition: One family only: Lone parent: All children non-dependent", "1FL-nA")
+    composition = composition.replace("Household Composition: Other household types: With dependent children", "1H-nC")
+    composition = composition.replace("Household Composition: Other household types: All full-time students","1H-nA")
+    composition = composition.replace("Household Composition: Other household types: All aged 65 and over","1H-nE")
+    composition = composition.replace("Household Composition: Other household types: Other", "1H-nA")
+
+    gender = column.split(";")[0].strip()
+    gender = gender.replace("Sex: Males", "M")
+    gender = gender.replace("Sex: Females", "F")
+
+    age = column.split(";")[1].strip()
+    age = age.replace("Age: Age 0 to 15", "0-15")
+    age = age.replace("Age: Age 16 to 24", "16-24")
+    age = age.replace("Age: Age 25 to 34", "25-34")
+    age = age.replace("Age: Age 35 to 49", "35-49")
+    age = age.replace("Age: Age 50 and over", "50+")
+    updated_columns.append(gender + ' ' +  age +  ' ' + composition)
+
+HH_composition_by_sex_by_age.columns = updated_columns
 
 # processing household composition by ethnicity cross table
 HH_composition_by_Ethnicity = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'HH_composition_by_ethnicity.csv'))
-filtered_columns = [col for col in HH_composition_by_Ethnicity.columns if any(substring in col for substring in ['geography code', 'total', 'W0', 'M0', 'A0', 'B0', 'O0'])]
-HH_composition_by_Ethnicity = HH_composition_by_Ethnicity[filtered_columns]
-for col in HH_composition_by_Ethnicity.columns:
-    for old_substring, new_substring in substring_mapping.items():
-        if old_substring in col:
-            new_col = col.replace(old_substring, new_substring)
-            HH_composition_by_Ethnicity.rename(columns={col: new_col}, inplace=True)
-            break
-for col in HH_composition_by_Ethnicity.columns:
-    for old_substring, new_substring in ethnicity_terms_mapping.items():
-        if old_substring in col:
-            new_col = col.replace(old_substring, new_substring)
-            HH_composition_by_Ethnicity.rename(columns={col: new_col}, inplace=True)
-            break
-filtered_columns = [col for col in HH_composition_by_Ethnicity.columns if not any(substring in col for substring in substrings_to_exclude)]
-HH_composition_by_Ethnicity = HH_composition_by_Ethnicity[filtered_columns]
+HH_composition_by_Ethnicity = HH_composition_by_Ethnicity.rename(columns = {'Household Composition: All categories: Household composition; Ethnic Group: All categories: Ethnic group of HRP; measures: Value':'total'})
+HH_composition_by_Ethnicity = HH_composition_by_Ethnicity.drop(columns=[col for col in HH_composition_by_Ethnicity.columns if 'All persons' in col])
+HH_composition_by_Ethnicity = HH_composition_by_Ethnicity.drop(columns=[col for col in HH_composition_by_Ethnicity.columns if 'All categories:' in col])
 
-# processing household composition by religion cross table
+updated_columns = ['geography code', 'total']
+subtract_columns = []
+for column in HH_composition_by_Ethnicity.columns[2:]:
+    composition = column.split(";")[0].strip()
+    # check if composition has Total or All categories
+    composition = composition.replace("Household Composition: One person household: Aged 65 and over", "1PE")
+    composition = composition.replace("Household Composition: One person household: Other", "1PA")
+    composition = composition.replace("Household Composition: One family only: All aged 65 and over", "1FE")
+    composition = composition.replace("Household Composition: One family only: Married or same-sex civil partnership couple: No children", "1FM-0C")
+    composition = composition.replace("Household Composition: One family only: Married or same-sex civil partnership couple: Dependent children","1FM-nC")
+    composition = composition.replace("Household Composition: One family only: Married or same-sex civil partnership couple: All children non-dependent", "1FM-nA")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: No children","1FC-0C")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: Dependent children","1FC-nC")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: All children non-dependent","1FC-nA")
+    composition = composition.replace("Household Composition: One family only: Lone parent: One dependent child","1FL-1C")
+    composition = composition.replace("Household Composition: One family only: Lone parent: Dependent children","1FL-nC")
+    composition = composition.replace("Household Composition: One family only: Lone parent: All children non-dependent", "1FL-nA")
+    composition = composition.replace("Household Composition: Other household types: With dependent children", "1H-nC")
+    composition = composition.replace("Household Composition: Other household types: All full-time students","1H-nA")
+    composition = composition.replace("Household Composition: Other household types: All aged 65 and over","1H-nE")
+    composition = composition.replace("Household Composition: Other household types: Other", "1H-nA")
+
+    ethnic = column.split(";")[1].strip()
+    ethnic = ethnic.replace('Ethnic Group: White: Total', 'W0')
+    ethnic = ethnic.replace('Ethnic Group: White: English/Welsh/Scottish/Northern Irish/British', 'W1')
+    ethnic = ethnic.replace('Ethnic Group: White: Irish', 'W2')
+    ethnic = ethnic.replace('Ethnic Group: White: Gypsy or Irish Traveller', 'W3')
+    ethnic = ethnic.replace('Ethnic Group: White: Other White', 'W4')
+
+    ethnic = ethnic.replace('Ethnic Group: Mixed/multiple ethnic group: Total', 'M0')
+    ethnic = ethnic.replace('Ethnic Group: Mixed/multiple ethnic group: White and Black Caribbean', 'M1')
+    ethnic = ethnic.replace('Ethnic Group: Mixed/multiple ethnic group: White and Black African', 'M2')
+    ethnic = ethnic.replace('Ethnic Group: Mixed/multiple ethnic group: White and Asian', 'M3')
+    ethnic = ethnic.replace('Ethnic Group: Mixed/multiple ethnic group: Other Mixed', 'M4')
+
+    ethnic = ethnic.replace('Ethnic Group: Asian/Asian British: Total', 'A0')
+    ethnic = ethnic.replace('Ethnic Group: Asian/Asian British: Indian', 'A1')
+    ethnic = ethnic.replace('Ethnic Group: Asian/Asian British: Pakistani', 'A2')
+    ethnic = ethnic.replace('Ethnic Group: Asian/Asian British: Bangladeshi', 'A3')
+    ethnic = ethnic.replace('Ethnic Group: Asian/Asian British: Chinese', 'A4')
+    ethnic = ethnic.replace('Ethnic Group: Asian/Asian British: Other Asian', 'A5')
+
+    ethnic = ethnic.replace('Ethnic Group: Black/African/Caribbean/Black British: Total', 'B0')
+    ethnic = ethnic.replace('Ethnic Group: Black/African/Caribbean/Black British: African', 'B1')
+    ethnic = ethnic.replace('Ethnic Group: Black/African/Caribbean/Black British: Caribbean', 'B2')
+    ethnic = ethnic.replace('Ethnic Group: Black/African/Caribbean/Black British: Other Black', 'B3')
+
+    ethnic = ethnic.replace('Ethnic Group: Other ethnic group: Total', 'O0')
+    ethnic = ethnic.replace('Ethnic Group: Other ethnic group: Arab', 'O1')
+    ethnic = ethnic.replace('Ethnic Group: Other ethnic group: Any other ethnic group', 'O2')
+    # print(composition + ' ' + ethnic)
+    updated_columns.append(composition + ' ' + ethnic)
+
+HH_composition_by_Ethnicity.columns = updated_columns
+HH_composition_by_Ethnicity = HH_composition_by_Ethnicity.drop(columns=[col for col in HH_composition_by_Ethnicity.columns if ':' in col])
+
+
+
 HH_composition_by_Religion = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'HH_composition_by_religion.csv'))
-for col in HH_composition_by_Religion.columns:
-    for old_substring, new_substring in substring_mapping.items():
-        if old_substring in col:
-            new_col = col.replace(old_substring, new_substring)
-            HH_composition_by_Religion.rename(columns={col: new_col}, inplace=True)
-            break
-filtered_columns = [col for col in HH_composition_by_Religion.columns if not any(substring in col for substring in substrings_to_exclude)]
-HH_composition_by_Religion = HH_composition_by_Religion[filtered_columns]
+HH_composition_by_Religion = HH_composition_by_Religion.rename(columns = {'Household Composition: All categories: Household composition; Ethnic Group: All categories: Ethnic group of HRP; measures: Value':'total'})
+HH_composition_by_Religion = HH_composition_by_Religion.drop(columns=[col for col in HH_composition_by_Religion.columns if 'All persons' in col])
+HH_composition_by_Religion = HH_composition_by_Religion.drop(columns=[col for col in HH_composition_by_Religion.columns if 'All categories:' in col])
+HH_composition_by_Religion = HH_composition_by_Religion.drop(columns=[col for col in HH_composition_by_Religion.columns if 'Total' in col])
+updated_columns = ['geography code', 'total']
+for column in HH_composition_by_Religion.columns[2:]:
+    composition = column.split(";")[0].strip()
+    composition = composition.replace("Household Composition: One person household: Aged 65 and over", "1PE")
+    composition = composition.replace("Household Composition: One person household: Other", "1PA")
+    composition = composition.replace("Household Composition: One family only: All aged 65 and over", "1FE")
+    composition = composition.replace(
+        "Household Composition: One family only: Married or same-sex civil partnership couple: No children", "1FM-0C")
+    composition = composition.replace(
+        "Household Composition: One family only: Married or same-sex civil partnership couple: Dependent children",
+        "1FM-nC")
+    composition = composition.replace(
+        "Household Composition: One family only: Married or same-sex civil partnership couple: All children non-dependent",
+        "1FM-nA")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: No children", "1FC-0C")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: Dependent children",
+                                      "1FC-nC")
+    composition = composition.replace(
+        "Household Composition: One family only: Cohabiting couple: All children non-dependent", "1FC-nA")
+    composition = composition.replace("Household Composition: One family only: Lone parent: One dependent child", "1FL-1C")
+    composition = composition.replace("Household Composition: One family only: Lone parent: Dependent children", "1FL-nC")
+    composition = composition.replace("Household Composition: One family only: Lone parent: All children non-dependent",
+                                      "1FL-nA")
+    composition = composition.replace("Household Composition: Other household types: With dependent children", "1H-nC")
+    composition = composition.replace("Household Composition: Other household types: All full-time students", "1H-nA")
+    composition = composition.replace("Household Composition: Other household types: All aged 65 and over", "1H-nE")
+    composition = composition.replace("Household Composition: Other household types: Other", "1H-nA")
 
-# processing household composition by sex by age cross table
-HH_composition_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'HH_composition_by_sex_by_age.csv'))
-for col in HH_composition_by_sex_by_age.columns:
-    for old_substring, new_substring in substring_mapping.items():
-        if old_substring in col:
-            new_col = col.replace(old_substring, new_substring)
-            HH_composition_by_sex_by_age.rename(columns={col: new_col}, inplace=True)
-            break
-filtered_columns = [col for col in HH_composition_by_sex_by_age.columns if not any(substring in col for substring in substrings_to_exclude)]
-HH_composition_by_sex_by_age = HH_composition_by_sex_by_age[filtered_columns]
+    religion = column.split(";")[1].strip()
+    religion = religion.replace('Religion: Christian', 'C')
+    religion = religion.replace('Religion: Buddhist', 'B')
+    religion = religion.replace('Religion: Hindu', 'H')
+    religion = religion.replace('Religion: Jewish', 'J')
+    religion = religion.replace('Religion: Muslim', 'M')
+    religion = religion.replace('Religion: Sikh', 'S')
+    religion = religion.replace('Religion: Other religion', 'O')
+    religion = religion.replace('Religion: No religion', 'N')
+    religion = religion.replace('Religion: Religion not stated', 'NS')
+    updated_columns.append(composition + ' ' + religion)
+HH_composition_by_Religion.columns = updated_columns

@@ -62,7 +62,7 @@ path = os.path.join(os.path.dirname(os.getcwd()))
 # sex_by_age_5yrs.to_csv(os.path.join(path, 'NOMIS', 'Census_2011_MSOA', 'crosstables', 'sex_by_age_5yrs.csv'), index=False)
 
 # ethnic_by_sex_by_age = pd.read_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'ethnic_by_sex_by_age_aggregated.csv'))
-# ethnic_by_sex_by_age = ethnic_by_sex_by_age.rename(columns = {'Sex: All persons; Age: All categories: Age; Ethnic Group: All categories: Ethnic group; measures: Value':'total'})
+# ethnic_by_sex_by_age = ethnic_by_sex_by_age.rename(columns = {'Sex: All persons; Age: All categories: Age; Ethnic Group: All categories: Ethnic group':'total'})
 # ethnic_by_sex_by_age = ethnic_by_sex_by_age.drop(columns=[col for col in ethnic_by_sex_by_age.columns if 'All' in col])
 # ethnic_by_sex_by_age = ethnic_by_sex_by_age.drop(columns=[col for col in ethnic_by_sex_by_age.columns if 'Total' in col])
 # ethnic_by_sex_by_age = ethnic_by_sex_by_age.drop(columns=['date', 'geography'])
@@ -97,7 +97,7 @@ path = os.path.join(os.path.dirname(os.getcwd()))
 # ethnic_by_sex_by_age.to_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'ethnic_by_sex_by_age_aggregated.csv'), index=False)
 
 # religion_by_sex_by_age = pd.read_csv(os.path.join(path, 'NOMIS', 'Census_2011_MSOA', 'crosstables', 'religion_by_sex_by_age.csv'))
-# religion_by_sex_by_age = religion_by_sex_by_age.rename(columns = {'Sex: All persons; Age: All categories: Age; Religion: All categories: Religion; measures: Value':'total'})
+# religion_by_sex_by_age = religion_by_sex_by_age.rename(columns = {'Sex: All persons; Age: All categories: Age; Religion: All categories: Religion':'total'})
 # religion_by_sex_by_age = religion_by_sex_by_age.drop(columns=[col for col in religion_by_sex_by_age.columns if 'All' in col])
 # religion_by_sex_by_age = religion_by_sex_by_age.drop(columns=[col for col in religion_by_sex_by_age.columns if 'Total' in col])
 # religion_by_sex_by_age = religion_by_sex_by_age.drop(columns=['date', 'geography'])
@@ -123,7 +123,7 @@ path = os.path.join(os.path.dirname(os.getcwd()))
 
 
 # marital_by_sex_by_age = pd.read_csv(os.path.join(path, 'SPONGE', 'Census_2011_MSOA', 'crosstables', 'marital_by_sex_by_age.csv'))
-# marital_by_sex_by_age = marital_by_sex_by_age.rename(columns = {'Age: All categories: Age 16 and over; Sex: All persons; Marital Status: All categories: Marital and civil partnership status; measures: Value':'total'})
+# marital_by_sex_by_age = marital_by_sex_by_age.rename(columns = {'Age: All categories: Age 16 and over; Sex: All persons; Marital Status: All categories: Marital and civil partnership status':'total'})
 # marital_by_sex_by_age = marital_by_sex_by_age.drop(columns=[col for col in marital_by_sex_by_age.columns if 'All' in col])
 # marital_by_sex_by_age = marital_by_sex_by_age.drop(columns=['date', 'geography'])
 #
@@ -144,7 +144,7 @@ path = os.path.join(os.path.dirname(os.getcwd()))
 # marital_by_sex_by_age.to_csv(os.path.join(path, 'SPONGE', 'Census_2011_MSOA', 'crosstables', 'marital_by_sex_by_age2.csv'), index=False)
 
 # qualification_by_sex_by_age = pd.read_csv(os.path.join(path, 'NOMIS', 'Census_2011_MSOA', 'crosstables', 'qualification_by_sex_by_age.csv'))
-# qualification_by_sex_by_age = qualification_by_sex_by_age.rename(columns = {'Sex: All persons; Age: All categories: Age 16 and over; Highest Level of Qualification: All categories: Highest level of qualification; measures: Value':'total'})
+# qualification_by_sex_by_age = qualification_by_sex_by_age.rename(columns = {'Sex: All persons; Age: All categories: Age 16 and over; Highest Level of Qualification: All categories: Highest level of qualification':'total'})
 # qualification_by_sex_by_age = qualification_by_sex_by_age.drop(columns=[col for col in qualification_by_sex_by_age.columns if 'All' in col])
 # qualification_by_sex_by_age = qualification_by_sex_by_age.drop(columns=['date', 'geography'])
 # columns = list(qualification_by_sex_by_age.columns)[2:]
@@ -166,7 +166,7 @@ path = os.path.join(os.path.dirname(os.getcwd()))
 # qualification_by_sex_by_age.to_csv(os.path.join(path, 'NOMIS', 'Census_2011_MSOA', 'crosstables', 'qualification_by_sex_by_age2.csv'), index=False)
 
 # ethnic_by_religion = pd.read_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'ethnic_by_religion.csv'))
-# ethnic_by_religion = ethnic_by_religion.rename(columns = {'Ethnic Group: All categories: Ethnic group; Religion: All categories: Religion; measures: Value':'total'})
+# ethnic_by_religion = ethnic_by_religion.rename(columns = {'Ethnic Group: All categories: Ethnic group; Religion: All categories: Religion':'total'})
 # ethnic_by_religion = ethnic_by_religion.drop(columns=[col for col in ethnic_by_religion.columns if 'All categories' in col])
 # ethnic_by_religion = ethnic_by_religion.drop(columns=[col for col in ethnic_by_religion.columns if 'Total' in col])
 # ethnic_by_religion = ethnic_by_religion.drop(columns=['date', 'geography'])
@@ -211,7 +211,7 @@ path = os.path.join(os.path.dirname(os.getcwd()))
 
 
 # HH_composition_by_ethnic = pd.read_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_ethnic.csv'))
-# HH_composition_by_ethnic = HH_composition_by_ethnic.rename(columns = {'Sex: All persons; Age: All categories: Age; Household Composition: All categories: Household composition; measures: Value':'total'})
+# HH_composition_by_ethnic = HH_composition_by_ethnic.rename(columns = {'Sex: All persons; Age: All categories: Age; Household Composition: All categories: Household composition':'total'})
 # HH_composition_by_ethnic = HH_composition_by_ethnic.drop(columns=[col for col in HH_composition_by_ethnic.columns if 'All persons' in col])
 # HH_composition_by_ethnic = HH_composition_by_ethnic.drop(columns=[col for col in HH_composition_by_ethnic.columns if 'All categories' in col])
 # HH_composition_by_ethnic = HH_composition_by_ethnic.drop(columns=[col for col in HH_composition_by_ethnic.columns if 'Total' in col])
@@ -241,90 +241,85 @@ path = os.path.join(os.path.dirname(os.getcwd()))
 # HH_composition_by_ethnic.to_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_ethnic.csv'), index=False)
 
 
-HH_composition_by_ethnic = pd.read_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_ethnicity.csv'))
-HH_composition_by_ethnic = HH_composition_by_ethnic.rename(columns = {'Household Composition: All categories: Household composition; Ethnic Group: All categories: Ethnic group of HRP; measures: Value':'total'})
-# HH_composition_by_ethnic = HH_composition_by_ethnic.drop(columns=[col for col in HH_composition_by_ethnic.columns if 'All persons' in col])
-HH_composition_by_ethnic = HH_composition_by_ethnic.drop(columns=[col for col in HH_composition_by_ethnic.columns if 'All categories' in col])
-# HH_composition_by_ethnic = HH_composition_by_ethnic.drop(columns=[col for col in HH_composition_by_ethnic.columns if 'Total' in col])
-
-updated_columns = ['geography code', 'total']
-for column in HH_composition_by_ethnic.columns[2:]:
-    composition = column.split(";")[0]
-    #
-    #
-    #
-    #
-    #
-    #
-    composition = composition.replace('Household Composition: One person household: Total', 'SP')
-    composition = composition.replace('Household Composition: One person household: Aged 65 and over', 'SP-Elder')
-    composition = composition.replace('Household Composition: One person household: Other', 'SP-Adult')
-
-    composition = composition.replace('Household Composition: One family only: Total', 'OF')
-    composition = composition.replace('Household Composition: One family only: All aged 65 and over', 'OF-Elder')
-
-    composition = composition.replace('Household Composition: One family only: Married or same-sex civil partnership couple: Total','OF-Married')
-    composition = composition.replace('Household Composition: One family only: Married or same-sex civil partnership couple: No children','OF-Married-0C')
-    composition = composition.replace('Household Composition: One family only: Married or same-sex civil partnership couple: Dependent children','OF-Married-2C')
-    composition = composition.replace('Household Composition: One family only: Married or same-sex civil partnership couple: All children non-dependent','OF-Married-ND')
-
-    composition = composition.replace('Household Composition: One family only: Cohabiting couple: Total', 'OF-Cohabiting')
-    composition = composition.replace('Household Composition: One family only: Cohabiting couple: No children','OF-Cohabiting-0C')
-    composition = composition.replace('Household Composition: One family only: Cohabiting couple: Dependent children','OF-Cohabiting-2C')
-    composition = composition.replace('Household Composition: One family only: Cohabiting couple: All children non-dependent', 'OF-Cohabiting-ND')
-
-    composition = composition.replace('Household Composition: One family only: Lone parent: Total','OF-Lone')
-    composition = composition.replace('Household Composition: One family only: Lone parent: Dependent children','OF-Lone-2C')
-    composition = composition.replace('Household Composition: One family only: Lone parent: All children non-dependent', 'OF-Lone-ND')
-
-    composition = composition.replace('Household Composition: Other household types: Total', 'OH')
-    composition = composition.replace('Household Composition: Other household types: With dependent children', 'OH-2C')
-    composition = composition.replace('Household Composition: Other household types: All full-time students','OH-Student')
-    composition = composition.replace('Household Composition: Other household types: All aged 65 and over', 'OH-Elder')
-    composition = composition.replace('Household Composition: Other household types: Other', 'OH-Adult')
-
-    ethnic = column.split(";")[1]
-    ethnic = ethnic.replace(' Ethnic Group: White: Total', 'W0')
-    ethnic = ethnic.replace(' Ethnic Group: White: English/Welsh/Scottish/Northern Irish/British', 'W1')
-    ethnic = ethnic.replace(' Ethnic Group: White: Irish', 'W2')
-    ethnic = ethnic.replace(' Ethnic Group: White: Gypsy or Irish Traveller', 'W3')
-    ethnic = ethnic.replace(' Ethnic Group: White: Other White', 'W4')
-
-    ethnic = ethnic.replace(' Ethnic Group: Mixed/multiple ethnic group: Total', 'M0')
-    ethnic = ethnic.replace(' Ethnic Group: Mixed/multiple ethnic group: White and Black Caribbean', 'M1')
-    ethnic = ethnic.replace(' Ethnic Group: Mixed/multiple ethnic group: White and Black African', 'M2')
-    ethnic = ethnic.replace(' Ethnic Group: Mixed/multiple ethnic group: White and Asian', 'M3')
-    ethnic = ethnic.replace(' Ethnic Group: Mixed/multiple ethnic group: Other Mixed', 'M4')
-
-    ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Total', 'A0')
-    ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Indian', 'A1')
-    ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Pakistani', 'A2')
-    ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Bangladeshi', 'A3')
-    ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Chinese', 'A4')
-    ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Other Asian', 'A5')
-
-    ethnic = ethnic.replace(' Ethnic Group: Black/African/Caribbean/Black British: Total', 'B0')
-    ethnic = ethnic.replace(' Ethnic Group: Black/African/Caribbean/Black British: African', 'B1')
-    ethnic = ethnic.replace(' Ethnic Group: Black/African/Caribbean/Black British: Caribbean', 'B2')
-    ethnic = ethnic.replace(' Ethnic Group: Black/African/Caribbean/Black British: Other Black', 'B3')
-
-    ethnic = ethnic.replace(' Ethnic Group: Other ethnic group: Total', 'O0')
-    ethnic = ethnic.replace(' Ethnic Group: Other ethnic group: Arab', 'O1')
-    ethnic = ethnic.replace(' Ethnic Group: Other ethnic group: Any other ethnic group', 'O2')
-    updated_columns.append(composition +' '+ ethnic)
-
-HH_composition_by_ethnic.columns = updated_columns
-HH_composition_by_ethnic.to_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_ethnicity.csv'), index=False)
-
-
-
-# HH_composition_by_religion = pd.read_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_religion.csv'))
-# HH_composition_by_religion = HH_composition_by_religion.rename(columns = {'Household Composition: All categories: Household composition; Religion: All categories: Religion of HRP; measures: Value':'total'})
-# HH_composition_by_religion = HH_composition_by_religion.drop(columns=[col for col in HH_composition_by_religion.columns if 'All categories' in col])
-# HH_composition_by_religion = HH_composition_by_religion.drop(columns=[col for col in HH_composition_by_religion.columns if 'Total' in col])
+# HH_composition_by_ethnic = pd.read_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_ethnicity.csv'))
+# HH_composition_by_ethnic = HH_composition_by_ethnic.rename(columns = {'Household Composition: All categories: Household composition; Ethnic Group: All categories: Ethnic group of HRP':'total'})
+# # HH_composition_by_ethnic = HH_composition_by_ethnic.drop(columns=[col for col in HH_composition_by_ethnic.columns if 'All persons' in col])
+# HH_composition_by_ethnic = HH_composition_by_ethnic.drop(columns=[col for col in HH_composition_by_ethnic.columns if 'All categories' in col])
+# # HH_composition_by_ethnic = HH_composition_by_ethnic.drop(columns=[col for col in HH_composition_by_ethnic.columns if 'Total' in col])
 #
 # updated_columns = ['geography code', 'total']
-# for column in HH_composition_by_religion.columns[2:]:
+# for column in HH_composition_by_ethnic.columns[2:]:
+#     composition = column.split(";")[0]
+#
+#     composition = composition.replace('Household Composition: One person household: Total', 'SP')
+#     composition = composition.replace('Household Composition: One person household: Aged 65 and over', 'SP-Elder')
+#     composition = composition.replace('Household Composition: One person household: Other', 'SP-Adult')
+#
+#     composition = composition.replace('Household Composition: One family only: Total', 'OF')
+#     composition = composition.replace('Household Composition: One family only: All aged 65 and over', 'OF-Elder')
+#
+#     composition = composition.replace('Household Composition: One family only: Married or same-sex civil partnership couple: Total','OF-Married')
+#     composition = composition.replace('Household Composition: One family only: Married or same-sex civil partnership couple: No children','OF-Married-0C')
+#     composition = composition.replace('Household Composition: One family only: Married or same-sex civil partnership couple: Dependent children','OF-Married-2C')
+#     composition = composition.replace('Household Composition: One family only: Married or same-sex civil partnership couple: All children non-dependent','OF-Married-ND')
+#
+#     composition = composition.replace('Household Composition: One family only: Cohabiting couple: Total', 'OF-Cohabiting')
+#     composition = composition.replace('Household Composition: One family only: Cohabiting couple: No children','OF-Cohabiting-0C')
+#     composition = composition.replace('Household Composition: One family only: Cohabiting couple: Dependent children','OF-Cohabiting-2C')
+#     composition = composition.replace('Household Composition: One family only: Cohabiting couple: All children non-dependent', 'OF-Cohabiting-ND')
+#
+#     composition = composition.replace('Household Composition: One family only: Lone parent: Total','OF-Lone')
+#     composition = composition.replace('Household Composition: One family only: Lone parent: Dependent children','OF-Lone-2C')
+#     composition = composition.replace('Household Composition: One family only: Lone parent: All children non-dependent', 'OF-Lone-ND')
+#
+#     composition = composition.replace('Household Composition: Other household types: Total', 'OH')
+#     composition = composition.replace('Household Composition: Other household types: With dependent children', 'OH-2C')
+#     composition = composition.replace('Household Composition: Other household types: All full-time students','OH-Student')
+#     composition = composition.replace('Household Composition: Other household types: All aged 65 and over', 'OH-Elder')
+#     composition = composition.replace('Household Composition: Other household types: Other', 'OH-Adult')
+#
+#     ethnic = column.split(";")[1]
+#     ethnic = ethnic.replace(' Ethnic Group: White: Total', 'W0')
+#     ethnic = ethnic.replace(' Ethnic Group: White: English/Welsh/Scottish/Northern Irish/British', 'W1')
+#     ethnic = ethnic.replace(' Ethnic Group: White: Irish', 'W2')
+#     ethnic = ethnic.replace(' Ethnic Group: White: Gypsy or Irish Traveller', 'W3')
+#     ethnic = ethnic.replace(' Ethnic Group: White: Other White', 'W4')
+#
+#     ethnic = ethnic.replace(' Ethnic Group: Mixed/multiple ethnic group: Total', 'M0')
+#     ethnic = ethnic.replace(' Ethnic Group: Mixed/multiple ethnic group: White and Black Caribbean', 'M1')
+#     ethnic = ethnic.replace(' Ethnic Group: Mixed/multiple ethnic group: White and Black African', 'M2')
+#     ethnic = ethnic.replace(' Ethnic Group: Mixed/multiple ethnic group: White and Asian', 'M3')
+#     ethnic = ethnic.replace(' Ethnic Group: Mixed/multiple ethnic group: Other Mixed', 'M4')
+#
+#     ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Total', 'A0')
+#     ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Indian', 'A1')
+#     ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Pakistani', 'A2')
+#     ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Bangladeshi', 'A3')
+#     ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Chinese', 'A4')
+#     ethnic = ethnic.replace(' Ethnic Group: Asian/Asian British: Other Asian', 'A5')
+#
+#     ethnic = ethnic.replace(' Ethnic Group: Black/African/Caribbean/Black British: Total', 'B0')
+#     ethnic = ethnic.replace(' Ethnic Group: Black/African/Caribbean/Black British: African', 'B1')
+#     ethnic = ethnic.replace(' Ethnic Group: Black/African/Caribbean/Black British: Caribbean', 'B2')
+#     ethnic = ethnic.replace(' Ethnic Group: Black/African/Caribbean/Black British: Other Black', 'B3')
+#
+#     ethnic = ethnic.replace(' Ethnic Group: Other ethnic group: Total', 'O0')
+#     ethnic = ethnic.replace(' Ethnic Group: Other ethnic group: Arab', 'O1')
+#     ethnic = ethnic.replace(' Ethnic Group: Other ethnic group: Any other ethnic group', 'O2')
+#     updated_columns.append(composition +' '+ ethnic)
+#
+# HH_composition_by_ethnic.columns = updated_columns
+# HH_composition_by_ethnic.to_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_ethnicity.csv'), index=False)
+#
+
+
+# HH_composition_by_sex_by_age = pd.read_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_sex_by_age.csv'))
+# HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.rename(columns = {'Household Composition: All categories: Household composition; Religion: All categories: Religion of HRP':'total'})
+# HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if 'All categories' in col])
+# HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if 'Total' in col])
+#
+# updated_columns = ['geography code', 'total']
+# for column in HH_composition_by_sex_by_age.columns[2:]:
 #     composition = column.split(";")[0]
 #     composition = composition.replace('Household Composition: One person household: Aged 65 and over', 'SP-Elder')
 #     composition = composition.replace('Household Composition: One person household: Other', 'SP-Adult')
@@ -354,5 +349,49 @@ HH_composition_by_ethnic.to_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_M
 #     religion = religion.replace(' Religion: Religion not stated', 'NS')
 #     updated_columns.append(composition +' '+ religion)
 #
-# HH_composition_by_religion.columns = updated_columns
-# HH_composition_by_religion.to_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_religion.csv'), index=False)
+# HH_composition_by_sex_by_age.columns = updated_columns
+# HH_composition_by_sex_by_age.to_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_sex_by_age.csv'), index=False)
+
+
+HH_composition_by_sex_by_age = pd.read_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_sex_by_age.csv'))
+HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.rename(columns = {'Household Composition: All categories: Household composition; Religion: All categories: Religion of HRP':'total'})
+HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if 'All persons' in col])
+HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if 'All categories:' in col])
+HH_composition_by_sex_by_age = HH_composition_by_sex_by_age.drop(columns=[col for col in HH_composition_by_sex_by_age.columns if 'Total' in col])
+
+updated_columns = ['geography code', 'total']
+for column in HH_composition_by_sex_by_age.columns[2:]:
+    composition = column.split(";")[2].strip()
+    composition = composition.replace("Household Composition: One person household: Aged 65 and over", "1PE")
+    composition = composition.replace("Household Composition: One person household: Other", "1PA")
+    composition = composition.replace("Household Composition: One family only: All aged 65 and over", "1FE")
+    composition = composition.replace("Household Composition: One family only: Married or same-sex civil partnership couple: No children", "1FM-0C")
+    composition = composition.replace("Household Composition: One family only: Married or same-sex civil partnership couple: Dependent children","1FM-nC")
+    composition = composition.replace("Household Composition: One family only: Married or same-sex civil partnership couple: All children non-dependent", "1FM-nA")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: No children","1FC-0C")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: Dependent children","1FC-nC")
+    composition = composition.replace("Household Composition: One family only: Cohabiting couple: All children non-dependent","1FC-nA")
+    composition = composition.replace("Household Composition: One family only: Lone parent: One dependent child","1FL-1C")
+    composition = composition.replace("Household Composition: One family only: Lone parent: Dependent children","1FL-nC")
+    composition = composition.replace("Household Composition: One family only: Lone parent: All children non-dependent", "1FL-nA")
+    composition = composition.replace("Household Composition: Other household types: With dependent children", "1H-nC")
+    composition = composition.replace("Household Composition: Other household types: All full-time students","1H-nA")
+    composition = composition.replace("Household Composition: Other household types: All aged 65 and over","1H-nE")
+    composition = composition.replace("Household Composition: Other household types: Other", "1H-nA")
+
+    gender = column.split(";")[0].strip()
+    gender = gender.replace("Sex: Males", "M")
+    gender = gender.replace("Sex: Females", "F")
+
+    age = column.split(";")[1].strip()
+    age = age.replace("Age: Age 0 to 15", "0-15")
+    age = age.replace("Age: Age 16 to 24", "16-24")
+    age = age.replace("Age: Age 25 to 34", "25-34")
+    age = age.replace("Age: Age 35 to 49", "35-49")
+    age = age.replace("Age: Age 50 and over", "50+")
+
+    updated_columns.append(gender + ' ' +  age +  ' ' + composition)
+
+HH_composition_by_sex_by_age.columns = updated_columns
+# HH_composition_by_sex_by_age.to_csv(os.path.join(path, 'Diff-SynPoP', 'Census_2011_MSOA', 'crosstables', 'HH_composition_by_sex_by_age.csv'), index=False)
+

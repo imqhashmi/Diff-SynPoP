@@ -4,7 +4,7 @@ import sys
 
 # appending the system path to run the file on kaggle
 # not required if you are running it locally
-sys.path.insert(1, '/kaggle/input/diffspop/Diff-SynPoP')
+# sys.path.insert(1, '/kaggle/input/diffspop/Diff-SynPoP')
 
 import os
 import time

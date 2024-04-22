@@ -95,10 +95,11 @@ households_df = pd.read_csv('households.csv')
 # convert households_df['assigned_persons'] to list
 households_df['assigned_persons'] = households_df['assigned_persons'].apply(lambda x: ast.literal_eval(x))
 errors = 0  # Initialize error count
-
+sum = 0
 for index, row in households_df.iterrows():
     assigned_individuals = persons_df[persons_df['Person_ID'].isin(row['assigned_persons'])]
+    sum += len(assigned_individuals)
     if not check_composition(row['composition'], assigned_individuals):
         errors += 1  # Increment error count for each failed household validation
 
-print(f"Total errors: {errors}")
+print(f"Total errors: {errors}", f"Total persons: {sum}", sep="\n")

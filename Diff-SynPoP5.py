@@ -51,7 +51,7 @@ def gumbel_softmax_sample(logits, temperature=0.5):
 
 # Define a function to generate the population
 def generate_population(input_tensor, temperature=0.5):
-    sex_logits = sex_net(input_tensor)
+    sex_logits = sex_net(pop)
     age_logits = age_net(input_tensor)
     ethnicity_logits = ethnic_net(input_tensor)
     sex = gumbel_softmax_sample(sex_logits, temperature)

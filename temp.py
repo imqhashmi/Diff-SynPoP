@@ -1,29 +1,15 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import InputData as ID
-import InputCrossTables as ICT
-import plotly.graph_objects as go
-import  plotly as py
-import pandas as pd
-import time
-import os
-
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-path = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP')
-
-print(path)
-#MSOA
-area = 'E02005924'
-total = ID.get_total(ID.age5ydf, area)
-
-sex = ID.getdictionary(ID.sexdf, area)
-age = ID.getdictionary(ID.age5ydf, area)
-ethnic = ID.getdictionary(ID.ethnicdf, area)
-
-print(sex)
-print(age)
-print(ethnic)
-area = 'E02005924'
-cross_table1 = ICT.getdictionary(ICT.ethnic_by_sex_by_age, area)
-print(cross_table1)
+# comp = []
+# for key, value in hh_comp_dict.items():
+#     comp.extend([key] * value)
+#
+# hh_df = pd.DataFrame(comp, columns=['composition'])
+# hh_df['size'] = hh_df['composition'].apply(lambda x: int(household_sizes[x][:-1]) if '+' in household_sizes[x] else int(household_sizes[x]))
+#
+# # evaluating the household sizes
+# hh_df['size_check'] = hh_df.apply(lambda x: check_size(x['composition'], x['size']), axis=1)
+# print(hh_df['size_check'].value_counts())
+# aggregating the household sizes
+# hh_size_dict = hh_df['size'].value_counts().to_dict()
+# hh_size_dict = {str(key): value for key, value in hh_size_dict.items()}
+# print(hh_size_dict)
+# print(ID.getdictionary(ID.HHsizedf, area))
