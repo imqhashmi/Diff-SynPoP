@@ -160,8 +160,9 @@ hh_size_net = FFNetwork(input_dim, hidden_dims, len(hh_size_dict)).to(device).cu
 input_tensor = initialize_input_tensor(hh_total, category_lengths, category_dicts.values()).to(device)
 init.kaiming_normal_(input_tensor)
 
-training = True
-# training = False
+print(hh_comp_dict.keys())
+# training = True
+training = False
 
 # defining the Gumbel-Softmax function
 def gumbel_softmax_sample(logits, temperature=0.5):
