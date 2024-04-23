@@ -63,3 +63,41 @@ plt.title('Hierarchical Clustering Dendrogram of Persons')
 plt.xlabel('Person ID')
 plt.ylabel('Distance')
 plt.show()
+
+import pandas as pd
+
+# Assume we have the following clusters from the hierarchical clustering (each list is a cluster of Person_IDs)
+clusters = [
+    [1, 5],  # Young singles
+    [2, 8, 9],  # Married, similar age and background
+    [3, 7],  # Older individuals
+    [4, 6]   # Mid-age, diverse backgrounds
+]
+
+# Our previously defined households DataFrame
+households_df = pd.DataFrame({
+    "religion": [0, 1, 2, 3, 3, 2, 1, 1, 1],
+    "ethnicity": [3, 2, 1, 0, 0, 0, 4, 2, 0],
+    "hh_comp": [0, 0, 0, 1, 1, 2, 3, 0, 3],
+    "hh_size": [1, 1, 1, 1, 1, 4, 1, 1, 1],
+    "hh_ID": list(range(1, 10))
+})
+
+# Check each cluster against each household
+def match_clusters_to_households(clusters, persons_df, households_df):
+    matches = []
+    for cluster in clusters:
+        for index, household in households_df.iterrows():
+            # Filter persons in this cluster
+            cluster_data = persons_df[persons_df['Person_ID'].isin(cluster)]
+            # Check if all persons in the cluster match the household's religion and ethnicity
+            if all(cluster_data['religion'] == household['religion']) and all(cluster_data['ethnicity'] == household['ethnicity']):
+                # Check household size compatibility
+                if len(cluster) == household['hh_size']:
+                    matches.append((cluster, household['hh_ID']))
+                    break  # Assuming one household per cluster for simplicity
+    return matches
+
+# Perform matching
+matches = match_clusters_to_households(clusters, persons_df, households_df)
+print("Matches found:", matches)
