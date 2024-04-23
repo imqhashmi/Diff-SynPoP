@@ -78,7 +78,6 @@ def reverse_agemap(age):
     elif age=="50+":
         return ['50_54', '55_59', '60_64', '65_69', '70_74', '75_79', '80_84', '85+']
 
-
 def key_replace(key):
     temp = key.split(' ')
     return temp[0] + ' ' + temp[1].replace('0', '')
@@ -91,39 +90,29 @@ area = 'E02005924' # geography code for one of the oxford areas (selected for th
 total = ID.get_total(ID.age5ydf, area) # getting the total number of individuals in our MSOA
 hh_total = ID.get_total(ID.HHcomdf, area)
 
-id = range(1, total + 1) # individual IDs
 sex_dict = ID.getdictionary(ID.sexdf, area) # sex
 age_dict = ID.getdictionary(ID.age5ydf, area) # age
 ethnic_dict = ID.getdictionary(ID.ethnicdf, area) # ethnicity
 religion_dict = ID.getdictionary(ID.religiondf, area) # religion
-marital_dict = ID.getdictionary(ID.maritaldf, area) # marital status
-qual_dict = ID.getdictionary(ID.qualdf, area) # highest qualification level
 hh_comp_dict = ID.getdictionary(ID.HHcomdf, area)  # household composition
 ct5 = ['1PE', '1PA', '1FE', '1FM-0C', '1FM-nC', '1FM-nA', '1FC-0C', '1FC-nC', '1FC-nA', '1FL-nC', '1FL-nA', '1H-nC', '1H-nA', '1H-nE']
 #iterate hh_comp_dict and remove keys that are not in ct5
 hh_comp_dict = {k: v for k, v in hh_comp_dict.items() if k in ct5}
-hh_id = range(1, hh_total + 1)
+# hh_id = range(1, hh_total + 1)
 hh_size_dict = ID.getdictionary(ID.HHsizedf, area)  # household size
-hh_comp_by_size = ICT.get_hh_comp_by_size_crosstable(area)
+
 
 # getting the length (number of classes) for each attribute
 category_dicts = {
     'sex': sex_dict,
     'age': age_dict,
-    'ethnicity': ethnic_dict,
-    'religion': religion_dict,
-    'marital': marital_dict,
-    'qual': qual_dict,
     'hh_comp': hh_comp_dict,
     'hh_size': hh_size_dict
 }
 # generate a dictionary of category lengths
 category_lengths = {key: len(value) for key, value in category_dicts.items()}
 
-cross_table1 = ICT.getdictionary(ICT.ethnic_by_sex_by_age, area)
-cross_table2 = ICT.getdictionary(ICT.religion_by_sex_by_age, area)
-cross_table3 = ICT.getdictionary(ICT.marital_by_sex_by_age, area)
-cross_table4 = ICT.getdictionary(ICT.qualification_by_sex_by_age, area)
+
 cross_table5 = ICT.getdictionary(ICT.HH_composition_by_sex_by_age, area)
 # iterate cross_table5 using compherension
 # cross_table5 = {k.split(' ')[2]: v for k, v in cross_table5.items()}
@@ -147,11 +136,7 @@ cross_table6 = {key_replace(k): v for k, v in cross_table6.items()}
 cross_table7 = ICT.getdictionary(ICT.HH_composition_by_Religion, area)
 cross_table8 = ICT.get_hh_comp_by_size_crosstable(area)
 cross_table8 = {k: v for k, v in cross_table8.items() if k.split(' ')[0] in ct5}
-# # With CUDA
-cross_table_tensor1 = torch.tensor(list(cross_table1.values()), dtype=torch.float32).to(device).cuda()
-cross_table_tensor2 = torch.tensor(list(cross_table2.values()), dtype=torch.float32).to(device).cuda()
-cross_table_tensor3 = torch.tensor(list(cross_table3.values()), dtype=torch.float32).to(device).cuda()
-cross_table_tensor4 = torch.tensor(list(cross_table4.values()), dtype=torch.float32).to(device).cuda()
+
 cross_table_tensor5 = torch.tensor(list(cross_table5a.values()), dtype=torch.float32).to(device).cuda()
 cross_table_tensor6 = torch.tensor(list(cross_table6.values()), dtype=torch.float32).to(device).cuda()
 cross_table_tensor7 = torch.tensor(list(cross_table7.values()), dtype=torch.float32).to(device).cuda()
@@ -167,14 +152,12 @@ sex_net = FFNetwork(input_dim, hidden_dims, len(sex_dict)).to(device).cuda()
 age_net = FFNetwork(input_dim, hidden_dims, len(age_dict)).to(device).cuda()
 ethnic_net = FFNetwork(input_dim, hidden_dims, len(ethnic_dict)).to(device).cuda()
 religion_net = FFNetwork(input_dim, hidden_dims, len(religion_dict)).to(device).cuda()
-marital_net = FFNetwork(input_dim, hidden_dims, len(marital_dict)).to(device).cuda()
-qual_net = FFNetwork(input_dim, hidden_dims, len(qual_dict)).to(device).cuda()
 hh_comp_net = FFNetwork(input_dim, hidden_dims, len(hh_comp_dict)).to(device).cuda()
 hh_size_net = FFNetwork(input_dim, hidden_dims, len(hh_size_dict)).to(device).cuda()
 
 # input for the networks
 # input_tensor = torch.empty(total, input_dim).to(device)
-input_tensor = initialize_input_tensor(total, category_lengths, category_dicts.values()).to(device)
+input_tensor = initialize_input_tensor(hh_total, category_lengths, category_dicts.values()).to(device)
 init.kaiming_normal_(input_tensor)
 
 training = True
@@ -191,8 +174,6 @@ def generate_population(input_tensor, temperature=0.5):
     age_logits = age_net(input_tensor)
     ethnicity_logits = ethnic_net(input_tensor)
     religion_logits = religion_net(input_tensor)
-    marital_logits = marital_net(input_tensor)
-    qual_logits = qual_net(input_tensor)
     hh_comp_logits = hh_comp_net(input_tensor)
     hh_size_logits = hh_size_net(input_tensor)
 
@@ -200,12 +181,11 @@ def generate_population(input_tensor, temperature=0.5):
     age = gumbel_softmax_sample(age_logits, temperature)
     ethnicity = gumbel_softmax_sample(ethnicity_logits, temperature)
     religion = gumbel_softmax_sample(religion_logits, temperature)
-    marital = gumbel_softmax_sample(marital_logits, temperature)
-    qual = gumbel_softmax_sample(qual_logits, temperature)
     hh_comp = gumbel_softmax_sample(hh_comp_logits, temperature)
     hh_size = gumbel_softmax_sample(hh_size_logits, temperature)
 
-    return torch.cat([sex, age, ethnicity, religion, marital, qual, hh_comp, hh_size], dim=-1)
+    # return torch.cat([sex, age, ethnicity, religion, hh_comp, hh_size], dim=-1)
+    return torch.cat([sex, age, hh_comp, hh_size], dim=-1)
 
 def aggregate(encoded_tensor, cross_table, category_dicts):
     # calculating split sizes based on category dictionaries
@@ -289,14 +269,11 @@ def weights_init(m):
         nn.init.kaiming_normal_(m.weight)
         nn.init.zeros_(m.bias)
 
-def combined_rmse_loss(aggregated_tensor1, aggregated_tensor2, aggregated_tensor3,
-                       aggregated_tensor4, aggregated_tensor5, aggregated_tensor6,
-                       aggregated_tensor7, aggregated_tensor8,
-                       target_tensor1, target_tensor2, target_tensor3, target_tensor4,
-                       target_tensor5, target_tensor6, target_tensor7, target_tensor8):
+def combined_rmse_loss(aggregated_tensor1, aggregated_tensor2,
+                       target_tensor1, target_tensor2):
     # concatenating the target and computed tensors along the characteristic dimension (dim=1)
-    concatenated_tensor = torch.cat([target_tensor1, target_tensor2, target_tensor3, target_tensor4,target_tensor5, target_tensor6, target_tensor7, target_tensor8])
-    aggregated_cat_tensor = torch.cat([aggregated_tensor1, aggregated_tensor2, aggregated_tensor3, aggregated_tensor4, aggregated_tensor5, aggregated_tensor6, aggregated_tensor7, aggregated_tensor8])
+    concatenated_tensor = torch.cat([target_tensor1, target_tensor2])
+    aggregated_cat_tensor = torch.cat([aggregated_tensor1, aggregated_tensor2])
     # calculating RMSE loss on the concatenated tensor
     loss = torch.sqrt(torch.mean((aggregated_cat_tensor - concatenated_tensor) ** 2))
     return loss
@@ -332,8 +309,8 @@ def plot(target, computed, cross_table, name):
     fig.show()
 def plot_radar(attribute, attribute_dict):
 
-    categories_gen = persons_df[attribute].unique().astype(str).tolist()
-    count_gen = [(persons_df[attribute] == str).sum() for str in categories_gen]
+    categories_gen = hh_df[attribute].unique().astype(str).tolist()
+    count_gen = [(hh_df[attribute] == str).sum() for str in categories_gen]
     categories, count_act = list(attribute_dict.keys()), list(attribute_dict.values())
 
     gen_combined = list(zip(categories_gen, count_gen))
@@ -392,10 +369,8 @@ if training:
     # training loop
     optimizer = torch.optim.Adam([{'params': sex_net.parameters()},
                                   {'params': age_net.parameters()},
-                                  {'params': ethnic_net.parameters()},
-                                  {'params': religion_net.parameters()},
-                                  {'params': marital_net.parameters()},
-                                  {'params': qual_net.parameters()},
+                                  # {'params': ethnic_net.parameters()},
+                                  # {'params': religion_net.parameters()},
                                     {'params': hh_comp_net.parameters()},
                                     {'params': hh_size_net.parameters()}], lr=0.01)
 
@@ -405,8 +380,6 @@ if training:
     age_net.apply(weights_init)
     ethnic_net.apply(weights_init)
     religion_net.apply(weights_init)
-    marital_net.apply(weights_init)
-    qual_net.apply(weights_init)
     hh_comp_net.apply(weights_init)
     hh_size_net.apply(weights_init)
 
@@ -417,65 +390,38 @@ if training:
         # generating and aggregating encoded population for sex, age, ethnicity
         encoded_population = generate_population(input_tensor)
 
-        categories_to_keep = ['sex', 'age', 'ethnicity']
-        kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
-        aggregated_population1 = aggregate(kept_tensor, cross_table1, [sex_dict, age_dict, ethnic_dict])
-
-        categories_to_keep = ['sex', 'age', 'religion']
-        kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
-        aggregated_population2 = aggregate(kept_tensor, cross_table2, [sex_dict, age_dict, religion_dict])
-
-        categories_to_keep = ['sex', 'age', 'marital']
-        kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
-        aggregated_population3 = aggregate(kept_tensor, cross_table3, [sex_dict, age_dict, marital_dict])
-
-        categories_to_keep = ['sex', 'age', 'qual']
-        kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
-        aggregated_population4 = aggregate(kept_tensor, cross_table4, [sex_dict, age_dict, qual_dict])
-
         categories_to_keep = ['sex', 'age', 'hh_comp']
         kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
         aggregated_population5 = aggregate(kept_tensor, cross_table5a, [sex_dict, age_dict, hh_comp_dict])
 
-        categories_to_keep = ['hh_comp', 'ethnicity']
-        kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
-        aggregated_population6 = aggregate(kept_tensor, cross_table6, [hh_comp_dict, ethnic_dict])
-
-        categories_to_keep = ['hh_comp', 'religion']
-        kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
-        aggregated_population7 = aggregate(kept_tensor, cross_table7, [hh_comp_dict, religion_dict])
+        # categories_to_keep = ['hh_comp', 'ethnicity']
+        # kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
+        # aggregated_population6 = aggregate(kept_tensor, cross_table6, [hh_comp_dict, ethnic_dict])
+        #
+        # categories_to_keep = ['hh_comp', 'religion']
+        # kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
+        # aggregated_population7 = aggregate(kept_tensor, cross_table7, [hh_comp_dict, religion_dict])
 
         categories_to_keep = ['hh_comp', 'hh_size']
         kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
         aggregated_population8 = aggregate(kept_tensor, cross_table8, [hh_comp_dict, hh_size_dict])
 
 
-        loss = combined_rmse_loss(aggregated_population1,
-                                  aggregated_population2,
-                                  aggregated_population3,
-                                  aggregated_population4,
-                                  aggregated_population5,
-                                  aggregated_population6,
-                                  aggregated_population7,
+        loss = combined_rmse_loss(aggregated_population5,
+                                  # aggregated_population6,
+                                  # aggregated_population7,
                                   aggregated_population8,
-                                  cross_table_tensor1,
-                                  cross_table_tensor2,
-                                  cross_table_tensor3,
-                                  cross_table_tensor4,
                                   cross_table_tensor5,
-                                  cross_table_tensor6,
-                                  cross_table_tensor7,
+                                  # cross_table_tensor6,
+                                  # cross_table_tensor7,
                                   cross_table_tensor8)
 
-        accuracy1 = rmse_accuracy(aggregated_population1, cross_table_tensor1)
-        accuracy2 = rmse_accuracy(aggregated_population2, cross_table_tensor2)
-        accuracy3 = rmse_accuracy(aggregated_population3, cross_table_tensor3)
-        accuracy4 = rmse_accuracy(aggregated_population4, cross_table_tensor4)
         accuracy5 = rmse_accuracy(aggregated_population5, cross_table_tensor5)
-        accuracy6 = rmse_accuracy(aggregated_population6, cross_table_tensor6)
-        accuracy7 = rmse_accuracy(aggregated_population7, cross_table_tensor7)
+        # accuracy6 = rmse_accuracy(aggregated_population6, cross_table_tensor6)
+        # accuracy7 = rmse_accuracy(aggregated_population7, cross_table_tensor7)
         accuracy8 = rmse_accuracy(aggregated_population8, cross_table_tensor8)
-        accuracy = (accuracy1 + accuracy2 + accuracy3 + accuracy4 + accuracy5 + accuracy6 + accuracy7 + accuracy8) / 8
+
+        accuracy = (accuracy5 + accuracy8) / 2
 
         loss_history.append(loss)
         accuracy_history.append(accuracy)
@@ -487,13 +433,9 @@ if training:
             print(f"Epoch {epoch}, Loss: {loss}, Accuracy: {accuracy}")
 
     # With CUDA
-    aggregated_population1 = aggregated_population1.round().long().cuda()
-    aggregated_population2 = aggregated_population2.round().long().cuda()
-    aggregated_population3 = aggregated_population3.round().long().cuda()
-    aggregated_population4 = aggregated_population4.round().long().cuda()
     aggregated_population5 = aggregated_population5.round().long().cuda()
-    aggregated_population6 = aggregated_population6.round().long().cuda()
-    aggregated_population7 = aggregated_population7.round().long().cuda()
+    # aggregated_population6 = aggregated_population6.round().long().cuda()
+    # aggregated_population7 = aggregated_population7.round().long().cuda()
     aggregated_population8 = aggregated_population8.round().long().cuda()
 
 
@@ -507,21 +449,18 @@ if training:
     accuracy_history = [tensor for tensor in accuracy_history]
 
     records = decode_tensor(encoded_population, category_dicts.values())
-    persons_df = pd.DataFrame(records, columns=['sex', 'age', 'ethnicity', 'religion', 'marital',
-                                                'qualification', 'hh_comp', 'hh_size'])
+    hh_df = pd.DataFrame(records, columns=['sex', 'age', 'hh_comp', 'hh_size'])
     # age_categories_to_single = ["0_4", "5_7", "8_9", "10_14", "15"]
     # persons_df.loc[persons_df['age'].isin(age_categories_to_single), 'marital'] = 'Single'
     # persons_df.loc[persons_df['age'].isin(age_categories_to_single), 'qualification'] = 'no'
-    persons_df['Person_ID'] = range(1, len(persons_df) + 1) # assigning a person ID to each row
-    persons_df.to_csv('synthetic_population.csv', index=False)
+    hh_df['hh_ID'] = range(1, len(hh_df) + 1) # assigning a person ID to each row
+    hh_df.to_csv('households-20240422.csv', index=False)
 
 
 
     # note: set show to 'yes' for displaying the plot
     plot_radar('age', age_dict)
-    plot_radar('religion', religion_dict)
-    plot_radar('ethnicity', ethnic_dict)
-    plot_radar('marital', marital_dict)
-    plot_radar('qualification', qual_dict)
+    # plot_radar('religion', religion_dict)
+    # plot_radar('ethnicity', ethnic_dict)
     plot_radar('hh_comp', hh_comp_dict)
     plot_radar('hh_size', hh_size_dict)
