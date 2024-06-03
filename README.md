@@ -2,6 +2,7 @@
 
 ### Table of Contents
 - [Summary](#summary)
+- [Main Benefits](#main-benefits)
 - [Future Improvements](#future-improvements)
 - [Installation](#installation)
 - [Contributing](#contributing)
