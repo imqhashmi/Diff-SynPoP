@@ -1,5 +1,12 @@
 # A differentiable approach for modelling multi-layer Synthetic Populations
 
+### Table of Contents
+- [Summary](#summary)
+- [Future Improvements](#future improvements)
+- [Installation](#installation)
+- [Contributing](#contributing)
+- [License](#license)
+
 ### Summary
 This codebase provides a differentiable approach for generating synthetic demographic data, employing a combination of neural networks, tensor operations, and data aggregation techniques.
 
@@ -114,3 +121,24 @@ git checkout -b feature/your-feature-name
 ```
 
 - Make the necessary changes to the codebase. Ensure your code follows the existing code style and conventions.
+
+- If applicable, write tests for your changes to ensure they work as expected and do not break existing functionality.
+
+- Commit your changes with a clear and concise commit message.
+
+```bash
+git add .
+git commit -m "Add feature: Description of your feature"
+```
+
+- Push your changes to the forked repository.
+
+```bash
+git push origin feature/your-feature-name
+```
+
+- Lastly, create a pull request (PR) from your branch to the main branch of the original repository. Include a detailed description of your changes in the PR.
+
+### License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
