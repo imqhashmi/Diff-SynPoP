@@ -88,10 +88,12 @@ In summary, this script is a significant step forward in the realm of synthetic 
 ### Installation
 To use this project, clone the repository and install the necessary dependencies. The list of libraries needed to run this project have been extracted along with their respective versions into the requirements.txt file.
 
+```
 git clone https://github.com/imqhashmi/Diff-SynPoP.git
 cd Diff-SynPoP
 pip install -r requirements.txt
 python Diff_SynPop.py
+```
 
 ### Contributing
 We welcome contributions to this project and appreciate your efforts to improve it. To keep everything organized and to ensure quality, please follow these guidelines when contributing:
@@ -100,11 +102,15 @@ Fork the repository to your own GitHub account. This will create a copy of the r
 
 Clone the forked repository to your local machine.
 
+```
 git clone https://github.com/imqhashmi/Diff-SynPoP.git
 cd Diff-SynPoP
+```
 
 Create a new branch for your feature or bug fix. Use a descriptive name for your branch.
 
+```
 git checkout -b feature/your-feature-name
+```
 
 Make the necessary changes to the codebase. Ensure your code follows the existing code style and conventions.
