@@ -118,6 +118,8 @@ We welcome contributions to this project and appreciate your efforts to improve 
 
 ```bash
 git clone https://github.com/imqhashmi/Diff-SynPoP.git
+```
+```bash
 cd Diff-SynPoP
 ```
 
@@ -135,6 +137,8 @@ git checkout -b feature/your-feature-name
 
 ```bash
 git add .
+```
+```bash
 git commit -m "Add feature: Description of your feature"
 ```
 
