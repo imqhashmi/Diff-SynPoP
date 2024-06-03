@@ -4,6 +4,7 @@ import sys
 
 import os
 import ast
+import math
 import time
 import random
 import itertools
@@ -766,3 +767,127 @@ plot_radar('religion', religion_dict, show='yes')
 plot_radar('ethnicity', ethnic_dict, show='yes')
 plot_radar('marital', marital_dict, show='yes')
 plot_radar('qualification', qual_dict, show='yes')
+
+households_df_plot = households.copy(deep=True)
+households_df_plot.loc[(households_df_plot['composition'].str.contains('1P')), 'composition'] = '1P'
+households_df_plot.loc[(households_df_plot['composition'].str.contains('1H')), 'composition'] = '1H'
+households_df_plot.loc[(households_df_plot['composition'].str.contains('1F')), 'composition'] = '1F'
+
+comp_list = households_df_plot['composition'].unique().astype(str).tolist()
+ethnic_dict = ID.getdictionary(ID.ethnicdf, area)
+ethnic_list = [str(k) for k in ethnic_dict.keys()]
+combinations = pd.DataFrame(list(itertools.product(comp_list, ethnic_list)), columns=['composition', 'ref_ethnicity'])
+counts_df = households_df_plot.groupby(['composition', 'ref_ethnicity']).size().reset_index(name='counts')
+comp_ethnic_df_gen = combinations.merge(counts_df, on=['composition', 'ref_ethnicity'], how='left').fillna(0)
+comp_ethnic_df_gen['category'] = comp_ethnic_df_gen.apply(lambda row: '{} {}'.format(row['composition'], row['ref_ethnicity']), axis=1)
+comp_ethnic_df_gen.drop(['composition', 'ref_ethnicity'], axis=1, inplace=True)
+comp_ethnic_df_gen['counts'] = comp_ethnic_df_gen['counts'].astype(int)
+
+comp_list = households_df_plot['composition'].unique().astype(str).tolist()
+religion_dict = ID.getdictionary(ID.religiondf, area)
+rel_list = [str(k) for k in religion_dict.keys()]
+combinations = pd.DataFrame(list(itertools.product(comp_list, rel_list)), columns=['composition', 'ref_religion'])
+counts_df = households_df_plot.groupby(['composition', 'ref_religion']).size().reset_index(name='counts')
+comp_rel_df_gen = combinations.merge(counts_df, on=['composition', 'ref_religion'], how='left').fillna(0)
+comp_rel_df_gen['category'] = comp_rel_df_gen.apply(lambda row: '{} {}'.format(row['composition'], row['ref_religion']), axis=1)
+comp_rel_df_gen.drop(['composition', 'ref_religion'], axis=1, inplace=True)
+comp_rel_df_gen['counts'] = comp_rel_df_gen['counts'].astype(int)
+
+cats = ["1P", "1F", "1H"]
+cross_table1_hh = ICT.getdictionary(ICT.HH_composition_by_Ethnicity, area)
+cross_table2_hh = ICT.getdictionary(ICT.HH_composition_by_Religion, area)
+
+new_dict = {}
+for key, value in cross_table1_hh.items():
+    for cat in cats:
+        if key.startswith(cat):
+            key_mod = f"{cat} " + key.split(" ")[1]
+            if key_mod in new_dict:
+                new_dict[key_mod] += value
+            else:
+                new_dict[key_mod] = value 
+comp_ethnic_df_act = pd.DataFrame({'category': new_dict.keys(), 'counts': new_dict.values()})
+
+new_dict = {}
+for key, value in cross_table2_hh.items():
+    for cat in cats:
+        if key.startswith(cat):
+            key_mod = f"{cat} " + key.split(" ")[1]
+            if key_mod in new_dict:
+                new_dict[key_mod] += value
+            else:
+                new_dict[key_mod] = value    
+comp_rel_df_act = pd.DataFrame({'category': new_dict.keys(), 'counts': new_dict.values()})
+
+import plotly.graph_objects as go
+
+def normalize_list(lst):
+    min_val = min(lst)
+    max_val = max(lst)
+    normalized_lst = [(x - min_val) / (max_val - min_val) for x in lst]
+    return normalized_lst
+
+def plot_radar_hh(attribute, act_df, gen_df, show):
+    
+    categories_gen = gen_df["category"].astype(str).tolist()
+    count_gen = gen_df["counts"].tolist()
+    categories = act_df["category"].astype(str).tolist()
+    count_act = act_df["counts"].tolist()
+
+    gen_combined = list(zip(categories_gen, count_gen))
+    gen_combined = sorted(gen_combined, key=lambda x: categories.index(x[0]))
+    categories_gen, count_gen = zip(*gen_combined)
+    count_gen = list(count_gen)   
+    range = (0, ((max(count_act) + max(count_gen)) / 2) * 1.1)
+    
+    count_act = [max(val, 10) for val in count_act]
+    count_gen = [max(val, 10) for val in count_gen]
+
+    squared_errors = [(actual - predicted) ** 2 for actual, predicted in zip(count_act, count_gen)]
+    mean_squared_error = sum(squared_errors) / len(count_act)
+    rmse = math.sqrt(mean_squared_error)
+    max_possible_error = math.sqrt(sum(x**2 for x in count_act))
+    accuracy = 1 - (rmse / max_possible_error)
+    
+    categories.append(categories[0])
+    count_act.append(count_act[0])
+    count_gen.append(count_gen[0])
+    
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scatterpolar(
+        r = count_act,
+        theta=categories,
+        name='Actual Households',
+        line=dict(width=10)
+    ))
+    
+    fig.add_trace(go.Scatterpolar(
+        r = count_gen,
+        theta=categories,
+        name='Generated Households',
+        line=dict(width=10)
+    ))
+
+    fig.update_layout(
+      polar=dict(
+        radialaxis=dict(
+            visible=True,
+            type='log',
+          showline=False,
+          showticklabels=False,
+          gridcolor='black'
+        )),
+      showlegend=True,
+      width=2500,
+      height=2500,
+      margin=dict(l=500, r=500, t=500, b=500),
+      font=dict(size=65)
+    )
+    
+    fig.write_html(f"comp-{attribute}-radar-chart.html")
+    fig.show() if show == 'yes' else None
+
+# note: set show to 'yes' for displaying the plot
+plot_radar_hh('ethnicity', comp_ethnic_df_act, comp_ethnic_df_gen, show='yes')
+plot_radar_hh('religion', comp_rel_df_act, comp_rel_df_gen, show='yes')
