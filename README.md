@@ -88,7 +88,7 @@ In summary, this script is a significant step forward in the realm of synthetic 
 ### Installation
 To use this project, clone the repository and install the necessary dependencies. The list of libraries needed to run this project have been extracted along with their respective versions into the requirements.txt file.
 
-```
+```bash
 git clone https://github.com/imqhashmi/Diff-SynPoP.git
 cd Diff-SynPoP
 pip install -r requirements.txt
