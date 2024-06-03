@@ -98,19 +98,19 @@ python Diff_SynPop.py
 ### Contributing
 We welcome contributions to this project and appreciate your efforts to improve it. To keep everything organized and to ensure quality, please follow these guidelines when contributing:
 
-Fork the repository to your own GitHub account. This will create a copy of the repository in your account.
+- Fork the repository to your own GitHub account. This will create a copy of the repository in your account.
 
-Clone the forked repository to your local machine.
+- Clone the forked repository to your local machine.
 
-```
+```bash
 git clone https://github.com/imqhashmi/Diff-SynPoP.git
 cd Diff-SynPoP
 ```
 
-Create a new branch for your feature or bug fix. Use a descriptive name for your branch.
+- Create a new branch for your feature or bug fix. Use a descriptive name for your branch.
 
-```
+```bash
 git checkout -b feature/your-feature-name
 ```
 
-Make the necessary changes to the codebase. Ensure your code follows the existing code style and conventions.
+- Make the necessary changes to the codebase. Ensure your code follows the existing code style and conventions.
