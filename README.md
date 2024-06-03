@@ -2,7 +2,7 @@
 
 ### Table of Contents
 - [Summary](#summary)
-- [Future Improvements](#future improvements)
+- [Future Improvements](#future-improvements)
 - [Installation](#installation)
 - [Contributing](#contributing)
 - [License](#license)
