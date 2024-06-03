@@ -84,3 +84,27 @@ This Gumbel-Softmax approach allows the 'sex' attribute to be encoded in a way t
 10. **Real-World Testing and Validation**: Extensive validation with real-world data to ensure reliability.
 
 In summary, this script is a significant step forward in the realm of synthetic demographic data generation, offering a nuanced and multifaceted approach to modeling complex data distributions. However, there's potential for further enhancements, particularly in terms of complexity, user accessibility, ethical considerations, and scalability, to increase its utility and applicability in diverse real-world scenarios.
+
+### Installation
+To use this project, clone the repository and install the necessary dependencies. The list of libraries needed to run this project have been extracted along with their respective versions into the requirements.txt file.
+
+git clone https://github.com/imqhashmi/Diff-SynPoP.git
+cd Diff-SynPoP
+pip install -r requirements.txt
+python Diff_SynPop.py
+
+### Contributing
+We welcome contributions to this project and appreciate your efforts to improve it. To keep everything organized and to ensure quality, please follow these guidelines when contributing:
+
+Fork the repository to your own GitHub account. This will create a copy of the repository in your account.
+
+Clone the forked repository to your local machine.
+
+git clone https://github.com/imqhashmi/Diff-SynPoP.git
+cd Diff-SynPoP
+
+Create a new branch for your feature or bug fix. Use a descriptive name for your branch.
+
+git checkout -b feature/your-feature-name
+
+Make the necessary changes to the codebase. Ensure your code follows the existing code style and conventions.
