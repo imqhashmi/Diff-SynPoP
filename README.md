@@ -106,7 +106,7 @@ cd Diff-SynPoP
 pip install -r requirements.txt
 ```
 ```bash
-python Diff_SynPop.py
+python run_model.py
 ```
 
 ### Contributing
