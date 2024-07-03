@@ -191,6 +191,16 @@ maritaldf = maritaldf[maritaldf['geography code'].isin(oxford_areas)]
 qualdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Qualification.csv'))
 qualdf = qualdf[qualdf['geography code'].isin(oxford_areas)]
 
+def getFinDictionary(df, area):
+    return df
+
+seg_df = {"1": 691, "2": 1523, "3": 964, "4": 594, "5": 708, "6": 1487, "7": 1242, "8": 404, "9": 451, "0": 2816}
+occupation_df = {"1": 544, "2": 780, "3": 652, "4": 563, "5": 616, "6": 486, "7": 595, "8": 819, "9": 856, "0": 4969}
+economic_act_df = {"1": 1027, "2": 4150, "3": 576, "4": 343, "5": 197, "6": 561, "7": 268, "8": 370, "9": 354, "10": 218, "0": 2816}
+approx_social_grade_df = {"AB": 695, "C1": 1128, "C2": 837, "DE": 1391, "Not_Reference_Person": 6829}
+general_health_df = {"Very_good_health": 5161, "Good_health": 3841, "Fair_health": 1339, "Bad_health": 434, "Very_bad_health": 105}
+industry_df = {"A": 26, "B": 2, "C": 953, "D": 15, "E": 48, "F": 350, "G": 1135, "H": 421, "I": 340, "J": 307, "K": 158, "L": 59, "M": 291, "N": 318, "O": 199, "P": 450, "Q": 544, "R_S_T_U": 295, "Not_employed": 4969}
+
 # processing household size distribution
 HHsizedf = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'individual', 'HH_size.csv'))
 HHsizedf = HHsizedf.rename(columns={'8+': '8'})
