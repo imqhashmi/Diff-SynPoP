@@ -959,6 +959,12 @@ plot_radar('religion', religion_dict, show='yes')
 plot_radar('ethnicity', ethnic_dict, show='yes')
 plot_radar('marital', marital_dict, show='yes')
 plot_radar('qualification', qual_dict, show='yes')
+plot_radar('seg', seg_dict, show='yes')
+plot_radar('occupation', occupation_dict, show='yes')
+plot_radar('economic_act', economic_act_dict, show='yes')
+plot_radar('approx_social_grade', approx_social_grade_dict, show='yes')
+plot_radar('general_health', general_health_dict, show='yes')
+plot_radar('industry', industry_dict, show='yes')
 
 households_df_plot = households.copy(deep=True)
 households_df_plot.loc[(households_df_plot['composition'].str.contains('1P')), 'composition'] = '1P'
