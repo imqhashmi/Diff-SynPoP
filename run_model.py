@@ -104,7 +104,6 @@ hh_comp_dict_mod = {index: value for index, (_, value) in enumerate(hh_comp_dict
 ethnic_dict_hh = ID.getdictionary(ID.ethnicdf, area) # ethnicity of reference person of a household
 religion_dict_hh = ID.getdictionary(ID.religiondf, area) # religion of reference person of a household
 car_ownership_dict = ID.getHHDictionary(ID.car_ownership_df, area) # car or van ownership / availability
-weekly_income_dict = ID.getHHDictionary(ID.weekly_income_df, area) # total and net weekly income
 
 # getting the length (number of classes) for each attribute
 category_lengths = {
@@ -556,7 +555,10 @@ def handle_composition(composition, size, persons):
         # Handle Other households: All pensioners
         students = persons[persons.apply(lambda row: row['qualification'] != 'no', axis=1)]
         return extract_random_sample(students, size)
-    
+
+# P = generate_population(input_tensor)
+# print(decode_tensor(P, ))
+
 ### Training / Plotting
 
 loss_history = []
@@ -605,7 +607,7 @@ ethnic_net_hh.apply(weights_init)
 religion_net_hh.apply(weights_init)
 car_ownership_net_hh.apply(weights_init)
 
-number_of_epochs = 300
+number_of_epochs = 1
 for epoch in range(number_of_epochs+1):
     optimizer.zero_grad()
     optimizer_hh.zero_grad()
@@ -614,7 +616,7 @@ for epoch in range(number_of_epochs+1):
     # generating and aggregating encoded households for reference religion, reference ethnicity, and composition
     encoded_population = generate_population(input_tensor)
     encoded_households = generate_households(input_tensor_hh)
-    
+
 #     if epoch % 20 == 0:
 #         records = decode_tensor(encoded_population, [sex_dict, age_dict, ethnic_dict, religion_dict, marital_dict, qual_dict])
 #         persons = pd.DataFrame(records, columns=['sex', 'age', 'ethnicity', 'religion', 'marital', 'qualification'])
@@ -631,7 +633,7 @@ for epoch in range(number_of_epochs+1):
 #             rel = household['ref_religion']
 #             comp = household['composition']
 #             size = household['size']
-            
+
 #             persons_filtered = persons[(persons['ethnicity'] == eth) & (persons['religion'] == rel)]
 #             persons_to_assign = handle_composition(comp, int(size), persons_filtered)
 #             households.at[i, 'assigned_persons'] = persons_to_assign
@@ -651,7 +653,7 @@ for epoch in range(number_of_epochs+1):
     categories_to_keep = ['sex', 'age', 'qual']
     kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
     aggregated_population4 = aggregate(kept_tensor, cross_table4, [sex_dict, age_dict, qual_dict])
-    
+
     categories_to_keep = ['seg']
     kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
     aggregated_population6 = aggregate(kept_tensor, cross_table6, [seg_dict])
@@ -663,7 +665,7 @@ for epoch in range(number_of_epochs+1):
     categories_to_keep = ['economic_act']
     kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
     aggregated_population8 = aggregate(kept_tensor, cross_table8, [economic_act_dict])
-    
+
     categories_to_keep = ['approx_social_grade']
     kept_tensor = keep_categories(encoded_population, category_lengths, categories_to_keep)
     aggregated_population9 = aggregate(kept_tensor, cross_table9, [approx_social_grade_dict])
@@ -683,7 +685,7 @@ for epoch in range(number_of_epochs+1):
     categories_to_keep_hh = ['composition', 'ref_religion']
     kept_tensor_hh = keep_categories(encoded_households, category_lengths_hh, categories_to_keep_hh)
     aggregated_households2 = aggregate(kept_tensor_hh, cross_table2_hh, [hh_comp_dict, religion_dict_hh])
-    
+
     categories_to_keep_hh = ['car_ownership']
     kept_tensor_hh = keep_categories(encoded_households, category_lengths_hh, categories_to_keep_hh)
     aggregated_households3 = aggregate(kept_tensor_hh, cross_table3_hh, [car_ownership_dict])
@@ -720,7 +722,7 @@ for epoch in range(number_of_epochs+1):
     accuracy10 = rmse_accuracy(aggregated_population10, cross_table_tensor10)
     accuracy11 = rmse_accuracy(aggregated_population11, cross_table_tensor11)
     accuracy = (accuracy1 + accuracy2 + accuracy3 + accuracy4 + accuracy6 + accuracy7 + accuracy8 + accuracy9 + accuracy10 + accuracy11) / 10
-    
+
     loss_hh = combined_rmse_loss_hh(aggregated_households1,
                                     aggregated_households2,
                                     aggregated_households3,
@@ -735,19 +737,19 @@ for epoch in range(number_of_epochs+1):
 
     loss_history.append(loss)
     accuracy_history.append(accuracy)
-    
+
     loss_history_hh.append(loss_hh)
     accuracy_history_hh.append(accuracy_hh)
 
     loss.backward()
     optimizer.step()
-    
+
     loss_hh.backward()
     optimizer_hh.step()
-        
+
     if epoch % 20 == 0:
         print(f"Epoch {epoch}, Ind Loss: {loss}, Ind Accuracy: {accuracy}, HH Loss: {loss_hh}, HH Accuracy: {accuracy_hh}")
-        
+
 records = decode_tensor(encoded_population, [sex_dict, age_dict, ethnic_dict, religion_dict, marital_dict, qual_dict, seg_dict, occupation_dict, economic_act_dict, approx_social_grade_dict, general_health_dict, industry_dict])
 persons = pd.DataFrame(records, columns=['sex', 'age', 'ethnicity', 'religion', 'marital', 'qualification', 'seg', 'occupation', 'economic_act', 'approx_social_grade', 'general_health', 'industry'])
 persons['Person_ID'] = range(1, len(persons) + 1)
@@ -758,12 +760,10 @@ households["size"] = households["composition"].apply(fit_household_size)
 households['assigned_persons'] = [[] for _ in range(len(households))]
 
 for i, household in households.iterrows():
-
     eth = household['ref_ethnicity']
     rel = household['ref_religion']
     comp = household['composition']
     size = household['size']
-
     persons_filtered = persons[(persons['ethnicity'] == eth) & (persons['religion'] == rel)]
     persons_to_assign = handle_composition(comp, int(size), persons_filtered)
     households.at[i, 'assigned_persons'] = persons_to_assign
@@ -783,25 +783,25 @@ aggregated_households1 = aggregated_households1.round().long().cuda()
 aggregated_households2 = aggregated_households2.round().long().cuda()
 aggregated_households3 = aggregated_households3.round().long().cuda()
 
-plot(cross_table_tensor1, aggregated_population1, cross_table1, 'Age-Sex-Ethnicity')
-plot(cross_table_tensor2, aggregated_population2, cross_table2, 'Age-Sex-Religion')
-plot(cross_table_tensor3, aggregated_population3, cross_table3, 'Age-Sex-MaritalStatus')
-plot(cross_table_tensor4, aggregated_population4, cross_table4, 'Age-Sex-Qualification')
-plot(cross_table_tensor6, aggregated_population6, cross_table6, 'Socio-Economic Grade')
-plot(cross_table_tensor7, aggregated_population7, cross_table7, 'Occupation')
-plot(cross_table_tensor8, aggregated_population8, cross_table8, 'Economic Activity')
-plot(cross_table_tensor9, aggregated_population9, cross_table9, 'Approximated Social Grade')
-plot(cross_table_tensor10, aggregated_population10, cross_table10, 'General Health')
-plot(cross_table_tensor11, aggregated_population11, cross_table11, 'Industry')
+# plot(cross_table_tensor1, aggregated_population1, cross_table1, 'Age-Sex-Ethnicity')
+# plot(cross_table_tensor2, aggregated_population2, cross_table2, 'Age-Sex-Religion')
+# plot(cross_table_tensor3, aggregated_population3, cross_table3, 'Age-Sex-MaritalStatus')
+# plot(cross_table_tensor4, aggregated_population4, cross_table4, 'Age-Sex-Qualification')
+# plot(cross_table_tensor6, aggregated_population6, cross_table6, 'Socio-Economic Grade')
+# plot(cross_table_tensor7, aggregated_population7, cross_table7, 'Occupation')
+# plot(cross_table_tensor8, aggregated_population8, cross_table8, 'Economic Activity')
+# plot(cross_table_tensor9, aggregated_population9, cross_table9, 'Approximated Social Grade')
+# plot(cross_table_tensor10, aggregated_population10, cross_table10, 'General Health')
+# plot(cross_table_tensor11, aggregated_population11, cross_table11, 'Industry')
 
 # plot_radar_triplets(cross_table_tensor1, aggregated_population1, cross_table1, 'Age-Sex-Ethnicity')
 # plot_radar_triplets(cross_table_tensor2, aggregated_population2, cross_table2, 'Age-Sex-Religion')
 # plot_radar_triplets(cross_table_tensor3, aggregated_population3, cross_table3, 'Age-Sex-MaritalStatus')
 # plot_radar_triplets(cross_table_tensor4, aggregated_population4, cross_table4, 'Age-Sex-Qualification')
 
-plot(cross_table_tensor1_hh, aggregated_households1, cross_table1_hh, 'Household Composition By Ethnicity')
-plot(cross_table_tensor2_hh, aggregated_households2, cross_table2_hh, 'Household Composition By Religion')
-plot(cross_table_tensor2_hh, aggregated_households2, cross_table2_hh, 'Car Ownership / Availability')
+# plot(cross_table_tensor1_hh, aggregated_households1, cross_table1_hh, 'Household Composition By Ethnicity')
+# plot(cross_table_tensor2_hh, aggregated_households2, cross_table2_hh, 'Household Composition By Religion')
+# plot(cross_table_tensor2_hh, aggregated_households2, cross_table2_hh, 'Car Ownership / Availability')
 
 # plot_radar_triplets(cross_table_tensor1_hh, aggregated_households1, cross_table1_hh, 'Household Composition By Ethnicity')
 # plot_radar_triplets(cross_table_tensor2_hh, aggregated_households2, cross_table2_hh, 'Household Composition By Religion')
@@ -809,46 +809,46 @@ plot(cross_table_tensor2_hh, aggregated_households2, cross_table2_hh, 'Car Owner
 loss_history = [tensor.to('cpu').item() for tensor in loss_history]
 accuracy_history = [tensor for tensor in accuracy_history]
 
-plt.figure(figsize=(12, 6))
-plt.subplot(1, 2, 1)
-plt.plot(range(len(loss_history)), loss_history, label='Training Loss')
-plt.title('Training Loss Over Epochs For Individuals')
-plt.xlabel('Epochs')
-plt.ylabel('Training Loss')
-plt.legend()
-
-plt.subplot(1, 2, 2)
-plt.plot(range(len(accuracy_history)), accuracy_history, label='Training Accuracy')
-plt.title('Training Accuracy Over Epochs For Individuals')
-plt.xlabel('Epochs')
-plt.ylabel('Training Accuracy')
-plt.legend()
-
-plt.tight_layout()
-plt.savefig('individual_generation_convergence.png')
-plt.show()
-
-loss_history_hh = [tensor.to('cpu').item() for tensor in loss_history_hh]
-accuracy_history_hh = [tensor for tensor in accuracy_history_hh]
-
-plt.figure(figsize=(12, 6))
-plt.subplot(1, 2, 1)
-plt.plot(range(len(loss_history_hh)), loss_history_hh, label='Training Loss')
-plt.title('Training Loss Over Epochs For Households')
-plt.xlabel('Epochs')
-plt.ylabel('Training Loss')
-plt.legend()
-
-plt.subplot(1, 2, 2)
-plt.plot(range(len(accuracy_history_hh)), accuracy_history_hh, label='Training Accuracy')
-plt.title('Training Accuracy Over Epochs For Households')
-plt.xlabel('Epochs')
-plt.ylabel('Training Accuracy')
-plt.legend()
-
-plt.tight_layout()
-plt.savefig('household_generation_convergence.png')
-plt.show()
+# plt.figure(figsize=(12, 6))
+# plt.subplot(1, 2, 1)
+# plt.plot(range(len(loss_history)), loss_history, label='Training Loss')
+# plt.title('Training Loss Over Epochs For Individuals')
+# plt.xlabel('Epochs')
+# plt.ylabel('Training Loss')
+# plt.legend()
+#
+# plt.subplot(1, 2, 2)
+# plt.plot(range(len(accuracy_history)), accuracy_history, label='Training Accuracy')
+# plt.title('Training Accuracy Over Epochs For Individuals')
+# plt.xlabel('Epochs')
+# plt.ylabel('Training Accuracy')
+# plt.legend()
+#
+# plt.tight_layout()
+# plt.savefig('individual_generation_convergence.png')
+# plt.show()
+#
+# loss_history_hh = [tensor.to('cpu').item() for tensor in loss_history_hh]
+# accuracy_history_hh = [tensor for tensor in accuracy_history_hh]
+#
+# plt.figure(figsize=(12, 6))
+# plt.subplot(1, 2, 1)
+# plt.plot(range(len(loss_history_hh)), loss_history_hh, label='Training Loss')
+# plt.title('Training Loss Over Epochs For Households')
+# plt.xlabel('Epochs')
+# plt.ylabel('Training Loss')
+# plt.legend()
+#
+# plt.subplot(1, 2, 2)
+# plt.plot(range(len(accuracy_history_hh)), accuracy_history_hh, label='Training Accuracy')
+# plt.title('Training Accuracy Over Epochs For Households')
+# plt.xlabel('Epochs')
+# plt.ylabel('Training Accuracy')
+# plt.legend()
+#
+# plt.tight_layout()
+# plt.savefig('household_generation_convergence.png')
+# plt.show()
 
 # records = decode_tensor(encoded_population, [sex_dict, age_dict, ethnic_dict, religion_dict, marital_dict, qual_dict])
 # persons_df = pd.DataFrame(records, columns=['sex', 'age', 'ethnicity', 'religion', 'marital', 'qualification'])
@@ -862,22 +862,22 @@ persons.to_csv('synthetic_population.csv', index=False)
 # households_df = pd.DataFrame(records_hh, columns=['composition', 'ref_ethnicity', 'ref_religion'])
 # households_df['household_ID'] = range(1, len(households_df) + 1) # assigning a household ID to each row
 
-desired_std = 200
-weekly_income_titles = list(weekly_income_dict.keys())
-title1 = weekly_income_titles[0]
-title2 = weekly_income_titles[1]
-weekly_income_values = list(weekly_income_dict.values())
-total_weekly_income_mean = weekly_income_values[0]
-net_weekly_income_mean = weekly_income_values[1]
-
-random_values = np.random.normal(loc=0, scale=1, size=num_households)
-scaled_values = random_values * desired_std + total_weekly_income_mean
-total_weekly_income = pd.Series(scaled_values)
-
-random_values = np.random.normal(loc=0, scale=1, size=num_households)
-scaled_values = random_values * desired_std + net_weekly_income_mean
-net_weekly_income = pd.Series(scaled_values)
-households = pd.concat([households, total_weekly_income, net_weekly_income], axis=1)
+# desired_std = 200
+# weekly_income_titles = list(weekly_income_dict.keys())
+# title1 = weekly_income_titles[0]
+# title2 = weekly_income_titles[1]
+# weekly_income_values = list(weekly_income_dict.values())
+# total_weekly_income_mean = weekly_income_values[0]
+# net_weekly_income_mean = weekly_income_values[1]
+#
+# random_values = np.random.normal(loc=0, scale=1, size=num_households)
+# scaled_values = random_values * desired_std + total_weekly_income_mean
+# total_weekly_income = pd.Series(scaled_values)
+#
+# random_values = np.random.normal(loc=0, scale=1, size=num_households)
+# scaled_values = random_values * desired_std + net_weekly_income_mean
+# net_weekly_income = pd.Series(scaled_values)
+# households = pd.concat([households, total_weekly_income, net_weekly_income], axis=1)
 households.to_csv('synthetic_households.csv', index=False)
 
 # recording execution end time
@@ -890,81 +890,161 @@ minutes = int((duration % 3600) // 60)
 seconds = duration % 60
 print(f"Duration: {hours} hours, {minutes} minutes, {seconds:.2f} seconds")
 
-persons_df_copy = persons.copy()
+persons_df = persons.copy()
 
 import plotly.graph_objects as go
 import math
+#
+# def plot_radar(attribute, attribute_dict, show):
+#
+#     categories_gen = persons_df[attribute].unique().astype(str).tolist()
+#     count_gen = [(persons_df[attribute] == str).sum() for str in categories_gen]
+#     categories, count_act = list(attribute_dict.keys()), list(attribute_dict.values())
+#
+#     gen_combined = list(zip(categories_gen, count_gen))
+#     gen_combined = sorted(gen_combined, key=lambda x: categories.index(x[0]))
+#     categories_gen, count_gen = zip(*gen_combined)
+#     count_gen = list(count_gen)
+#     range = (0, ((max(count_act) + max(count_gen)) / 2) * 1.1)
+#
+#     count_act = [max(val, 10) for val in count_act]
+#     count_gen = [max(val, 10) for val in count_gen]
+#
+#     squared_errors = [(actual - predicted) ** 2 for actual, predicted in zip(count_act, count_gen)]
+#     mean_squared_error = sum(squared_errors) / len(count_act)
+#     rmse = math.sqrt(mean_squared_error)
+#     max_possible_error = math.sqrt(sum(x**2 for x in count_act))
+#     accuracy = 1 - (rmse / max_possible_error)
+#
+#     categories.append(categories[0])
+#     count_act.append(count_act[0])
+#     count_gen.append(count_gen[0])
+#
+#     fig = go.Figure()
+#
+#     fig.add_trace(go.Scatterpolar(
+#         r = count_gen,
+#         theta=categories,
+#         name='Generated Population',
+#         line=dict(width=10)
+#     ))
+#     fig.add_trace(go.Scatterpolar(
+#         r = count_act,
+#         theta=categories,
+#         name='Actual Population',
+#         line=dict(width=10)
+#     ))
+#
+#     fig.update_layout(
+#       polar=dict(
+#         radialaxis=dict(
+#           visible=True,
+#           type='log',
+#           tickvals=[10, 100, 1000],
+#           tickmode='array'
+#         )),
+#       showlegend=True,
+#       width=2500,
+#       height=2500,
+#       margin=dict(l=500, r=500, t=500, b=500),
+#       font=dict(size=65)
+#     )
+#
+#     file = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP', 'Visualizations', 'radar_charts', attribute + 'radar_charts.html')
+#     py.offline.plot(fig, filename=file)
+#     fig.show() if show == 'yes' else None
 
-def plot_radar(attribute, attribute_dict, show):
-    
-    categories_gen = persons_df[attribute].unique().astype(str).tolist()    
-    count_gen = [(persons_df[attribute] == str).sum() for str in categories_gen]
-    categories, count_act = list(attribute_dict.keys()), list(attribute_dict.values())
+def plot_radar(attribute, attribute_dict, show='no'):
+    # Extract unique categories and their counts
+    categories_gen = persons_df[attribute].unique().astype(str).tolist()
+    count_gen = [persons_df[attribute].value_counts().get(str(cat), 0) for cat in categories_gen]
 
-    gen_combined = list(zip(categories_gen, count_gen))
-    gen_combined = sorted(gen_combined, key=lambda x: categories.index(x[0]))
+    # Get actual categories and counts
+    categories = list(attribute_dict.keys())
+    count_act = list(attribute_dict.values())
+
+    # Align generated counts with actual categories
+    gen_combined = sorted(zip(categories_gen, count_gen), key=lambda x: categories.index(x[0]))
     categories_gen, count_gen = zip(*gen_combined)
-    count_gen = list(count_gen)   
-    range = (0, ((max(count_act) + max(count_gen)) / 2) * 1.1)
-    
+    count_gen = list(count_gen)
+
+    # Calculate range and update counts for visualization
     count_act = [max(val, 10) for val in count_act]
-    count_gen = [max(val, 10) for val in count_gen] 
-    
+    count_gen = [max(val, 10) for val in count_gen]
+
+    # Calculate accuracy
     squared_errors = [(actual - predicted) ** 2 for actual, predicted in zip(count_act, count_gen)]
     mean_squared_error = sum(squared_errors) / len(count_act)
     rmse = math.sqrt(mean_squared_error)
-    max_possible_error = math.sqrt(sum(x**2 for x in count_act))
+    max_possible_error = math.sqrt(sum(x ** 2 for x in count_act))
     accuracy = 1 - (rmse / max_possible_error)
-    
+
+    # Close the radar chart loop
     categories.append(categories[0])
     count_act.append(count_act[0])
     count_gen.append(count_gen[0])
 
+    # Calculate dynamic tick values and labels based on min and max values
+    max_value = max(max(count_act), max(count_gen))
+    min_value = min(min(count_act), min(count_gen))
+    step = (max_value - min_value) / 5
+    tickvals = [min_value + i * step for i in range(6)]
+    ticktext = [str(round(min_value + i * step, 2)) for i in range(6)]
+
+    # Create radar chart
     fig = go.Figure()
+    fig.add_trace(go.Scatterpolar(r=count_gen, theta=categories, name='Generated Population', line=dict(width=3)))
+    fig.add_trace(go.Scatterpolar(r=count_act, theta=categories, name='Actual Population', line=dict(width=3)))
 
-    fig.add_trace(go.Scatterpolar(
-        r = count_gen,
-        theta=categories,
-        name='Generated Population',
-        line=dict(width=10)
-    ))
-    fig.add_trace(go.Scatterpolar(
-        r = count_act,
-        theta=categories,
-        name='Actual Population',
-        line=dict(width=10)
-    ))
-
+    # Update layout
     fig.update_layout(
-      polar=dict(
-        radialaxis=dict(
-          visible=True,
-          type='log',
-          tickvals=[10, 100, 1000],
-          tickmode='array'
-        )),
-      showlegend=True,
-      width=2500,
-      height=2500,
-      margin=dict(l=500, r=500, t=500, b=500),
-      font=dict(size=65)
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                type='linear',
+                tickvals=tickvals,
+                ticktext=ticktext,
+                tickmode='array',
+                showline=True,
+                showticklabels=True,  # Show tick labels
+                linewidth=1,  # Set the line width
+                gridcolor="rgba(0, 0, 0, 0.1)",  # Set the grid color to black
+                linecolor="rgba(0, 0, 0, 0.1)"  # Set the line color to black
+            ),
+            angularaxis=dict(
+                showline=True,
+                # gridcolor="rgba(0, 0, 0, 0.1)",
+                # linecolor="rgba(0, 0, 0, 0.1)"
+                linewidth=2,  # Set the line width for the angular lines
+                gridcolor="rgba(0, 0, 0, 0.1)",  # Set light black color with low opacity for grid lines
+                linecolor="black",  # Set the outer boundary line color to black
+            ),
+        ),
+        showlegend=True,
+        width=800,
+        height=800,
+        margin=dict(l=50, r=50, t=50, b=50),
+        font=dict(size=15)
     )
-    
-    fig.write_html(f"{attribute}-radar-chart.html")
-    fig.show() if show == 'yes' else None
+
+    # Save and show the plot
+    file = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP', 'radar_charts', f"{attribute}-radar-chart.html")
+    py.offline.plot(fig, filename=file)
+    fig.show()
 
 # note: set show to 'yes' for displaying the plot
-plot_radar('age', age_dict, show='yes')
-plot_radar('religion', religion_dict, show='yes')
-plot_radar('ethnicity', ethnic_dict, show='yes')
-plot_radar('marital', marital_dict, show='yes')
-plot_radar('qualification', qual_dict, show='yes')
-plot_radar('seg', seg_dict, show='yes')
-plot_radar('occupation', occupation_dict, show='yes')
-plot_radar('economic_act', economic_act_dict, show='yes')
-plot_radar('approx_social_grade', approx_social_grade_dict, show='yes')
-plot_radar('general_health', general_health_dict, show='yes')
-plot_radar('industry', industry_dict, show='yes')
+# plot_radar('age', age_dict, show='yes')
+# plot_radar('religion', religion_dict, show='yes')
+# plot_radar('ethnicity', ethnic_dict, show='yes')
+# plot_radar('marital', marital_dict, show='yes')
+# plot_radar('qualification', qual_dict, show='yes')
+# plot_radar('seg', seg_dict, show='yes')
+# plot_radar('occupation', occupation_dict, show='yes')
+# plot_radar('economic_act', economic_act_dict, show='yes')
+# plot_radar('approx_social_grade', approx_social_grade_dict, show='yes')
+# plot_radar('general_health', general_health_dict, show='yes')
+# plot_radar('industry', industry_dict, show='yes')
+
 
 households_df_plot = households.copy(deep=True)
 households_df_plot.loc[(households_df_plot['composition'].str.contains('1P')), 'composition'] = '1P'
@@ -1003,7 +1083,7 @@ for key, value in cross_table1_hh.items():
             if key_mod in new_dict:
                 new_dict[key_mod] += value
             else:
-                new_dict[key_mod] = value 
+                new_dict[key_mod] = value
 comp_ethnic_df_act = pd.DataFrame({'category': new_dict.keys(), 'counts': new_dict.values()})
 
 new_dict = {}
@@ -1014,7 +1094,7 @@ for key, value in cross_table2_hh.items():
             if key_mod in new_dict:
                 new_dict[key_mod] += value
             else:
-                new_dict[key_mod] = value    
+                new_dict[key_mod] = value
 comp_rel_df_act = pd.DataFrame({'category': new_dict.keys(), 'counts': new_dict.values()})
 
 import plotly.graph_objects as go
@@ -1026,7 +1106,7 @@ def normalize_list(lst):
     return normalized_lst
 
 def plot_radar_hh(attribute, act_df, gen_df, show):
-    
+
     categories_gen = gen_df["category"].astype(str).tolist()
     count_gen = gen_df["counts"].tolist()
     categories = act_df["category"].astype(str).tolist()
@@ -1035,9 +1115,9 @@ def plot_radar_hh(attribute, act_df, gen_df, show):
     gen_combined = list(zip(categories_gen, count_gen))
     gen_combined = sorted(gen_combined, key=lambda x: categories.index(x[0]))
     categories_gen, count_gen = zip(*gen_combined)
-    count_gen = list(count_gen)   
+    count_gen = list(count_gen)
     range = (0, ((max(count_act) + max(count_gen)) / 2) * 1.1)
-    
+
     count_act = [max(val, 10) for val in count_act]
     count_gen = [max(val, 10) for val in count_gen]
 
@@ -1046,20 +1126,20 @@ def plot_radar_hh(attribute, act_df, gen_df, show):
     rmse = math.sqrt(mean_squared_error)
     max_possible_error = math.sqrt(sum(x**2 for x in count_act))
     accuracy = 1 - (rmse / max_possible_error)
-    
+
     categories.append(categories[0])
     count_act.append(count_act[0])
     count_gen.append(count_gen[0])
-    
+
     fig = go.Figure()
-    
+
     fig.add_trace(go.Scatterpolar(
         r = count_act,
         theta=categories,
         name='Actual Households',
         line=dict(width=10)
     ))
-    
+
     fig.add_trace(go.Scatterpolar(
         r = count_gen,
         theta=categories,
@@ -1082,7 +1162,7 @@ def plot_radar_hh(attribute, act_df, gen_df, show):
       margin=dict(l=500, r=500, t=500, b=500),
       font=dict(size=65)
     )
-    
+
     fig.write_html(f"comp-{attribute}-radar-chart.html")
     fig.show() if show == 'yes' else None
 

@@ -85,15 +85,18 @@ def getweights(df, area):
 
 def getHHcomdictionary(df, area):
     #filter df by area
-    df = df[df['geography code'] == area]
+    # df = df[df['geography code'] == area]
     df.drop(['total', '1FM', '1FC', '1FL'], axis=1, inplace=True)
-    dic = {}
-    for index, row in df.iterrows():
-        for index, column in enumerate(df.columns):
-            if index==0:
-                continue
-            dic[column] = int(row[column])
-    # return dict(sorted(dic.items()))
+    # dic = {}
+    # for index, row in df.iterrows():
+    #     for index, column in enumerate(df.columns):
+    #         if index==0:
+    #             continue
+    #         dic[column] = int(row[column])
+    # # return dict(sorted(dic.items()))
+    df = df[df['geography code'] == area]
+    dic = df.iloc[0].to_dict()
+    dic.pop('geography code')
     return dic
 
 def get_weighted_sample(df):
@@ -116,6 +119,7 @@ def get_category_weights(df, area):
     weights = [x / total for x in values]
     return weights
 
+
 def get_total(df, area):
     #filter df by area
     df = df[df['geography code'] == area]
@@ -124,12 +128,6 @@ def get_total(df, area):
     total = values.pop(0)
     return total
 
-def get_HH_com_total(df, area):
-    #filter df by area
-    df = df[df['geography code'] == area]
-    df.drop(['geography code', 'total', '1FM', '1FC', '1FL'], axis=1, inplace=True)
-    total = int(df.iloc[0].sum())
-    return total
 
 def get_weighted_samples(df, size):
     groups = [col.strip() for col in list(df.columns)][2:] #drop first two columns: areacode and total
@@ -167,7 +165,7 @@ def aggregate_age_groups(age_distribution):
             aggregated_counts[category] += age_distribution.get(age_range, 0)
     return aggregated_counts
 
-path = os.path.join(os.path.dirname(os.getcwd()), 'input/diffspop/Diff-SynPoP')
+path = os.path.join(os.path.dirname(os.getcwd()), 'Diff-SynPoP')
 
 oxford_areas = ['E02005921', 'E02005922', 'E02005923', 'E02005924', 'E02005925', 'E02005926', 'E02005927', 'E02005928', 'E02005929', 'E02005930', 'E02005931', 'E02005932', 'E02005933', 'E02005934', 'E02005935', 'E02005936', 'E02005937', 'E02005938', 'E02005939', 'E02005940', 'E02005941', 'E02005942', 'E02005943', 'E02005944', 'E02005945', 'E02005946', 'E02005947', 'E02005948', 'E02005949', 'E02005950', 'E02005951', 'E02005952', 'E02005953', 'E02005954', 'E02005955', 'E02005956', 'E02005957', 'E02005958', 'E02005959', 'E02005960', 'E02005961', 'E02005962', 'E02005963', 'E02005964', 'E02005965', 'E02005966', 'E02005967', 'E02005968', 'E02005969', 'E02005970', 'E02005971', 'E02005972', 'E02005973', 'E02005974', 'E02005975', 'E02005976', 'E02005977', 'E02005978', 'E02005979', 'E02005980', 'E02005981', 'E02005982', 'E02005983', 'E02005984', 'E02005985', 'E02005986', 'E02005987', 'E02005988', 'E02005991', 'E02005992', 'E02006886', 'E02005993', 'E02005994', 'E02005995', 'E02005996', 'E02005997', 'E02005998', 'E02005999', 'E02006000', 'E02006001', 'E02006002', 'E02006003', 'E02006004', 'E02006005', 'E02006006', 'E02006007']
 # Read census data
@@ -200,12 +198,12 @@ def getHHDictionary(df, area):
 seg_df = {"1": 691, "2": 1523, "3": 964, "4": 594, "5": 708, "6": 1487, "7": 1242, "8": 404, "9": 451, "0": 2816}
 occupation_df = {"1": 544, "2": 780, "3": 652, "4": 563, "5": 616, "6": 486, "7": 595, "8": 819, "9": 856, "0": 4969}
 economic_act_df = {"1": 1027, "2": 4150, "3": 576, "4": 343, "5": 561, "6": 465, "7": 370, "8": 354, "9": 218, "0": 2816}
-approx_social_grade_df = {"AB": 695, "C1": 1128, "C2": 837, "DE": 1391, "Not_Reference_Person": 6829}
-general_health_df = {"Very_good_health": 5161, "Good_health": 3841, "Fair_health": 1339, "Bad_health": 434, "Very_bad_health": 105}
-industry_df = {"A": 26, "B": 2, "C": 953, "D": 15, "E": 48, "F": 350, "G": 1135, "H": 421, "I": 340, "J": 307, "K": 158, "L": 59, "M": 291, "N": 318, "O": 199, "P": 450, "Q": 544, "R_S_T_U": 295, "Not_employed": 4969}
+approx_social_grade_df = {"AB": 695, "C1": 1128, "C2": 837, "DE": 1391, "NA": 6829}
+general_health_df = {"Very_Good": 5161, "Good": 3841, "Fair": 1339, "Bad": 434, "Poor": 105}
+industry_df = {"A": 26, "B": 2, "C": 953, "D": 15, "E": 48, "F": 350, "G": 1135, "H": 421, "I": 340, "J": 307, "K": 158, "L": 59, "M": 291, "N": 318, "O": 199, "P": 450, "Q": 544, "R_S_T_U": 295, "NE": 4969}
 
 car_ownership_df = {"0": 1558, "1": 2227, "2": 851, "3": 169, "4+": 47}
-weekly_income_df = {"total_weekly_income": 640, "net_weekly_income": 510}
+income_df = {"Male": (830.9, 2.7), "Female": (602.7, 2.5)}
 
 # processing household size distribution
 HHsizedf = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'individual', 'HH_size.csv'))
