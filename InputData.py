@@ -189,12 +189,6 @@ maritaldf = maritaldf[maritaldf['geography code'].isin(oxford_areas)]
 qualdf = pd.read_csv(os.path.join(path, 'Census_2011_MSOA', 'individual', 'Qualification.csv'))
 qualdf = qualdf[qualdf['geography code'].isin(oxford_areas)]
 
-def getFinDictionary(df, area):
-    return df
-
-def getHHDictionary(df, area):
-    return df
-
 seg_df = {"1": 691, "2": 1523, "3": 964, "4": 594, "5": 708, "6": 1487, "7": 1242, "8": 404, "9": 451, "0": 2816}
 occupation_df = {"1": 544, "2": 780, "3": 652, "4": 563, "5": 616, "6": 486, "7": 595, "8": 819, "9": 856, "0": 4969}
 economic_act_df = {"1": 1027, "2": 4150, "3": 576, "4": 343, "5": 561, "6": 465, "7": 370, "8": 354, "9": 218, "0": 2816}

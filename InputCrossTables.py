@@ -8,6 +8,7 @@ import plotly as py
 import math
 from collections import Counter
 import itertools
+import plotly.graph_objects as go
 
 def getkeys(df):
     groups = list(df.columns)[2:] #drop first two columns: areacode and total
@@ -264,24 +265,25 @@ ethnic_by_religion.columns = [col.replace('0', '') for col in ethnic_by_religion
 
 marital_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'marital_by_sex_by_age.csv'))
 # print(convert_marital_cross_table(getdictionary(marital_by_sex_by_age, 'E02005924')))
+# replace NaN with 0
+marital_by_sex_by_age = marital_by_sex_by_age.fillna(0)
 
 qualification_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'qualification_by_sex_by_age.csv'))
 # print(convert_qualification_cross_table(getdictionary(qualification_by_sex_by_age, 'E02005924')))
+qualification_by_sex_by_age = qualification_by_sex_by_age.fillna(0)
 
-def getFinDictionary(df, area):
-    return df
+occupation_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'occupation_by_sex_by_age.csv'))
+economic_activity_by_sex_by_age = pd.read_csv(os.path.join(path,  'Census_2011_MSOA', 'crosstables', 'economic_activity_by_sex_by_age.csv'))
 
-def getHHDictionary(df, area):
-    return df
+general_health = {"Very_Good": 5161, "Good": 3841, "Fair": 1339, "Bad": 434, "Poor": 105}
+car_ownership = {"0": 1558, "1": 2227, "2": 851, "3": 169, "4+": 47}
+
 
 seg = {"1": 691, "2": 1523, "3": 964, "4": 594, "5": 708, "6": 1487, "7": 1242, "8": 404, "9": 451, "0": 2816}
 occupation = {"1": 544, "2": 780, "3": 652, "4": 563, "5": 616, "6": 486, "7": 595, "8": 819, "9": 856, "0": 4969}
 economic_act = {"1": 1027, "2": 4150, "3": 576, "4": 343, "5": 561, "6": 465, "7": 370, "8": 354, "9": 218, "0": 2816}
 approx_social_grade = {"AB": 695, "C1": 1128, "C2": 837, "DE": 1391, "NA": 6829}
-general_health = general_health_df = {"Very_Good": 5161, "Good": 3841, "Fair": 1339, "Bad": 434, "Poor": 105}
 industry = {"A": 26, "B": 2, "C": 953, "D": 15, "E": 48, "F": 350, "G": 1135, "H": 421, "I": 340, "J": 307, "K": 158, "L": 59, "M": 291, "N": 318, "O": 199, "P": 450, "Q": 544, "R_S_T_U": 295, "NE": 4969}
-
-car_ownership = {"0": 1558, "1": 2227, "2": 851, "3": 169, "4+": 47}
 
 # new terms for household compositions
 substring_mapping = {
